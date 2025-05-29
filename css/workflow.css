@@ -1,0 +1,98 @@
+/* BPMN.js specific styles */
+.bjs-powered-by {
+  display: none; /* Hide watermark */
+}
+
+.djs-palette {
+  background: white !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+}
+
+.djs-palette .entry {
+  color: #333 !important;
+}
+
+.djs-palette .entry:hover {
+  color: #1a73e8 !important;
+}
+
+.djs-context-pad {
+  background: white !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
+}
+
+.properties-panel {
+  background: white !important;
+  border-left: 1px solid #ccc !important;
+  overflow-y: auto !important;
+}
+
+.bpmn-canvas {
+  height: calc(100vh - 200px) !important;
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+}
+
+/* Custom workflow styles */
+.workflow-templates {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.workflow-template-item {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.workflow-template-item:hover {
+  background-color: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+.workflow-toolbar {
+  padding: 8px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.workflow-toolbar button {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.workflow-status {
+  font-size: 12px;
+  color: #6b7280;
+  margin-left: auto;
+}
+
+/* Properties panel customization */
+.properties-panel-parent {
+  width: 300px !important;
+  background: #f9fafb !important;
+  padding: 16px !important;
+}
+
+.properties-panel input,
+.properties-panel select,
+.properties-panel textarea {
+  border: 1px solid #d1d5db !important;
+  border-radius: 4px !important;
+  padding: 4px 8px !important;
+}
+
+.properties-panel input:focus,
+.properties-panel select:focus,
+.properties-panel textarea:focus {
+  outline: none !important;
+  border-color: #2563eb !important;
+  ring: 2px !important;
+  ring-color: #93c5fd !important;
+}
