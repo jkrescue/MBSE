@@ -7,21 +7,33 @@
   background: white !important;
   border: 1px solid #ccc !important;
   border-radius: 4px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
 }
 
 .djs-palette .entry {
   color: #333 !important;
+  transition: all 0.2s !important;
 }
 
 .djs-palette .entry:hover {
   color: #1a73e8 !important;
+  background: #f3f4f6 !important;
 }
 
 .djs-context-pad {
   background: white !important;
   border: 1px solid #ccc !important;
   border-radius: 4px !important;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.djs-context-pad .entry {
+  background: white !important;
+  transition: all 0.2s !important;
+}
+
+.djs-context-pad .entry:hover {
+  background: #f3f4f6 !important;
 }
 
 .properties-panel {
@@ -34,12 +46,52 @@
   height: calc(100vh - 200px) !important;
   border: 1px solid #ccc !important;
   border-radius: 4px !important;
+  background: #fafafa !important;
+}
+
+/* Token simulation styles */
+.bts-container {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+.bts-token {
+  background: #1a73e8 !important;
+  border-radius: 50% !important;
+}
+
+/* Minimap styles */
+.djs-minimap {
+  border: 1px solid #ccc !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Grid styles */
+.djs-grid {
+  color: #e5e7eb !important;
 }
 
 /* Custom workflow styles */
 .workflow-templates {
-  max-height: 300px;
+  max-height: calc(100vh - 300px);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.workflow-templates::-webkit-scrollbar {
+  width: 6px;
+}
+
+.workflow-templates::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.workflow-templates::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 3px;
 }
 
 .workflow-template-item {
@@ -50,14 +102,16 @@
 .workflow-template-item:hover {
   background-color: #f3f4f6;
   transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .workflow-toolbar {
-  padding: 8px;
+  padding: 12px;
   border-bottom: 1px solid #e5e7eb;
   display: flex;
   gap: 8px;
   align-items: center;
+  background: #f9fafb;
 }
 
 .workflow-toolbar button {
@@ -65,12 +119,22 @@
   border-radius: 4px;
   font-size: 14px;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.workflow-toolbar button:hover {
+  transform: translateY(-1px);
 }
 
 .workflow-status {
   font-size: 12px;
   color: #6b7280;
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 /* Properties panel customization */
@@ -78,6 +142,7 @@
   width: 300px !important;
   background: #f9fafb !important;
   padding: 16px !important;
+  border-left: 1px solid #e5e7eb !important;
 }
 
 .properties-panel input,
@@ -85,7 +150,15 @@
 .properties-panel textarea {
   border: 1px solid #d1d5db !important;
   border-radius: 4px !important;
-  padding: 4px 8px !important;
+  padding: 6px 8px !important;
+  font-size: 14px !important;
+  transition: all 0.2s !important;
+}
+
+.properties-panel input:hover,
+.properties-panel select:hover,
+.properties-panel textarea:hover {
+  border-color: #9ca3af !important;
 }
 
 .properties-panel input:focus,
@@ -95,4 +168,40 @@
   border-color: #2563eb !important;
   ring: 2px !important;
   ring-color: #93c5fd !important;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important;
+}
+
+.properties-panel label {
+  font-size: 12px !important;
+  color: #4b5563 !important;
+  margin-bottom: 4px !important;
+}
+
+/* Color picker customization */
+.bpmn-js-color-picker {
+  border: 1px solid #e5e7eb !important;
+  border-radius: 4px !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+}
+
+/* Keyboard shortcuts tooltip */
+.workflow-shortcuts {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.9);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #6b7280;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;
+}
+
+.workflow-shortcuts kbd {
+  background: #f3f4f6;
+  padding: 2px 4px;
+  border-radius: 3px;
+  border: 1px solid #d1d5db;
+  margin: 0 2px;
 }
