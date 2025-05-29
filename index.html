@@ -6,16 +6,13 @@
   <title>MBSE 应用中心 - 汽车空调热管理系统</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/workflow.css">
-  <link rel="stylesheet" href="node_modules/bpmn-js/dist/assets/diagram-js.css">
-  <link rel="stylesheet" href="node_modules/bpmn-js/dist/assets/bpmn-font/css/bpmn.css">
-  <link rel="stylesheet" href="node_modules/bpmn-js-properties-panel/dist/assets/properties-panel.css">
+  <link rel="stylesheet" href="css/pdf-style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.js';
-    window.mermaid = mermaid;
+    window.mermaid = mermaid; // Make it globally available for uiUtils or modules if needed before full main.js exec
   </script>
   <script>
     tailwind.config = {
@@ -26,7 +23,7 @@
             success: '#67c23a',
             warning: '#e6a23c',
             danger: '#f56c6c',
-            info: '#409eff',
+            info: '#409eff', // Added info color
             gray: {
               50: '#f5f7fa',
               100: '#f0f2f5',
@@ -35,7 +32,7 @@
               400: '#c0c4cc',
               500: '#909399',
               600: '#606266',
-              700: '#409eff',
+              700: '#409eff', // This was primary blue, changed to info blue
               800: '#303133',
               900: '#1f2937'
             }
@@ -97,9 +94,6 @@
         <button class="tab-button flex-1 py-2 px-4 text-center rounded-md transition-all duration-300 bg-primary text-white font-medium" data-tab="requirements">
           需求管理
         </button>
-        <button class="tab-button flex-1 py-2 px-4 text-center rounded-md transition-all duration-300 text-gray-600 hover:bg-gray-200" data-tab="workflow">
-          工作流管理
-        </button>
         <button class="tab-button flex-1 py-2 px-4 text-center rounded-md transition-all duration-300 text-gray-600 hover:bg-gray-200" data-tab="architecture">
           功能与架构设计
         </button>
@@ -114,47 +108,352 @@
       <div class="tab-content-container">
         <!-- Requirements Management Tab -->
         <div id="requirements-tab" class="tab-content active">
-          <!-- Previous requirements content -->
-        </div>
-
-        <!-- Workflow Management Tab -->
-        <div id="workflow-tab" class="tab-content">
-          <div class="bg-white rounded-lg shadow-sm">
-            <div class="workflow-toolbar">
-              <button id="newWorkflow" class="bg-primary text-white hover:bg-blue-700">新建流程</button>
-              <button id="saveWorkflow" class="bg-success text-white hover:bg-green-600">保存</button>
-              <button id="importWorkflow" class="bg-gray-500 text-white hover:bg-gray-600">导入</button>
-              <button id="exportWorkflow" class="bg-gray-500 text-white hover:bg-gray-600">导出</button>
-              <span class="workflow-status">上次保存: <span id="lastSaveTime">未保存</span></span>
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-semibold text-gray-800">需求管理</h3>
+              <div class="flex space-x-2">
+                <button id="importRequirements" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded transition-colors text-sm">导入数据</button>
+                <input type="file" id="importRequirementsFile" class="hidden" accept=".json">
+                <button id="exportRequirements" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-2 rounded transition-colors text-sm">导出数据</button>
+                <button id="addRequirement" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+                  + 添加需求
+                </button>
+              </div>
             </div>
-            
-            <div class="flex">
-              <!-- Templates Panel -->
-              <div class="w-64 p-4 border-r border-gray-200">
-                <h3 class="font-medium text-gray-800 mb-3">流程模板</h3>
-                <div id="workflowTemplates" class="workflow-templates space-y-3">
-                  <!-- Templates will be inserted here -->
-                </div>
-              </div>
 
-              <!-- BPMN Canvas -->
-              <div class="flex-1">
-                <div id="bpmnCanvas" class="bpmn-canvas"></div>
+            <div class="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-lg">
+              <div class="text-sm text-gray-600">
+                当前需求数：<span id="currentReqCount" class="font-semibold text-gray-800">0</span> 个
               </div>
+              <div class="text-sm text-gray-600">
+                最近同步时间：<span id="lastReqSyncTime" class="font-semibold text-gray-800">N/A</span>
+              </div>
+            </div>
 
-              <!-- Properties Panel -->
-              <div id="propertiesPanel" class="properties-panel-parent"></div>
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">需求清单</h4>
+              <div class="overflow-x-auto">
+                <table id="requirementsTable" class="w-full border-collapse border border-gray-200 rounded-lg">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">编号</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">名称</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">状态</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">负责人</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">版本</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">优先级</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody id="requirementsTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-6">
+              <h4 class="font-medium text-gray-700 mb-3">配置项</h4>
+              <div class="space-y-3">
+                <label class="flex items-center space-x-3">
+                  <input type="checkbox" id="autoReview" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                  <span class="text-sm text-gray-700">允许需求修改后自动触发评审</span>
+                  <span id="autoReviewStatus" class="text-xs text-gray-500 ml-2"></span>
+                </label>
+                <label class="flex items-center space-x-3">
+                  <input type="checkbox" id="impactAnalysis" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                  <span class="text-sm text-gray-700">启用需求影响分析</span>
+                   <span id="impactAnalysisStatus" class="text-xs text-gray-500 ml-2"></span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Other tabs remain unchanged -->
+        <div id="architecture-tab" class="tab-content">
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">功能与架构设计</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div class="p-4 bg-gray-50 rounded-lg">
+                <div class="text-sm text-gray-600">模型语言：<span class="font-semibold text-gray-800">SysML (模拟)</span></div>
+                <div class="text-sm text-gray-600">模型文件：<span id="architectureModelFile" class="font-semibold text-gray-800">N/A</span></div>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-lg flex items-center space-x-3">
+                 <button id="refreshArchitecture" class="bg-success hover:bg-green-600 text-white px-4 py-2 rounded transition-colors">
+                  刷新架构图
+                </button>
+                <span id="architectureRefreshStatus" class="text-sm text-gray-600"></span>
+              </div>
+            </div>
+
+            <!-- 系统模型说明区域 -->
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">系统模型说明</h4>
+              <div id="architectureModelDescription" class="bg-white border border-gray-200 rounded-lg p-6 min-h-[400px]">
+                <div class="text-gray-500 text-sm">正在加载系统模型说明...</div>
+              </div>
+            </div>
+
+            <!-- 架构信息汇总区域 -->
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">架构信息汇总</h4>
+              <div id="architectureSummary"></div>
+            </div>
+
+            <!-- 用户可配置项 -->
+            <div class="border-t border-gray-200 pt-6">
+              <h4 class="font-medium text-gray-700 mb-3">用户可配置项</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="functionBlockCount" class="block text-sm font-medium text-gray-700 mb-1">功能块数量</label>
+                  <input type="number" id="functionBlockCount" value="5" min="1" max="20"
+                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                  <span id="functionBlockCountError" class="text-red-500 text-xs mt-1"></span>
+                </div>
+                <div>
+                  <label for="interfaceFile" class="block text-sm font-medium text-gray-700 mb-1">接口定义文件 (模拟上传)</label>
+                  <input type="file" id="interfaceFile" accept=".xml,.json,.yaml,.txt"
+                         class="w-full px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-blue-700">
+                  <span id="interfaceFileStatus" class="text-xs text-gray-500 mt-1 block"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div id="simulation-tab" class="tab-content">
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-semibold text-gray-800">系统集成仿真</h3>
+              <button id="runSimulation" class="bg-success hover:bg-green-600 text-white px-4 py-2 rounded transition-colors">
+                运行仿真
+              </button>
+            </div>
+
+            <div class="p-4 bg-gray-50 rounded-lg mb-6">
+              <div class="text-sm text-gray-600">FMU 文件 (模拟)：<span id="simulationFMUFile" class="font-semibold text-gray-800">CoolingSys_v3.fmu</span></div>
+            </div>
+            
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">仿真配置项</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label for="simulationCases" class="block text-sm font-medium text-gray-700 mb-1">仿真工况数</label>
+                  <input type="number" id="simulationCases" value="12" min="1" max="100"
+                         class="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                  <span id="simulationCasesError" class="text-red-500 text-xs mt-1"></span>       
+                </div>
+                 <div>
+                  <label for="simulationDuration" class="block text-sm font-medium text-gray-700 mb-1">仿真时长 (秒)</label>
+                  <input type="number" id="simulationDuration" value="60" min="10" max="300"
+                         class="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                  <span id="simulationDurationError" class="text-red-500 text-xs mt-1"></span>       
+                </div>
+              </div>
+              <div class="space-y-3 mt-4">
+                <label class="flex items-center space-x-3">
+                  <input type="checkbox" id="enableComparison" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                  <span class="text-sm text-gray-700">启用多方案对比 (模拟)</span>
+                </label>
+                <label class="flex items-center space-x-3">
+                  <input type="checkbox" id="enableKPI" class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                  <span class="text-sm text-gray-700">启用KPI输出图 (模拟)</span>
+                </label>
+              </div>
+            </div>
+
+            <div id="simulationProgressContainer" class="hidden mb-6">
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div class="flex items-center space-x-3 mb-2">
+                  <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                  <span id="simulationStatusText" class="text-sm text-blue-700">仿真正在进行中...</span>
+                </div>
+                <div class="bg-blue-200 rounded-full h-2.5">
+                  <div id="simulationProgressBar" class="bg-primary h-2.5 rounded-full progress-animate" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">仿真结果 (Chart.js动态生成)</h4>
+              <div id="simulationResults" class="border border-gray-200 rounded-lg p-4 bg-gray-50 min-h-[300px]">
+                <canvas id="simulationChart"></canvas>
+                <div id="simulationSummary" class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="traceability-tab" class="tab-content">
+          <div class="bg-white rounded-lg shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-lg font-semibold text-gray-800">设计追溯</h3>
+              <div class="flex space-x-3">
+                <button id="exportReport" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors">
+                  导出追溯报告
+                </button>
+                <button id="viewUncovered" class="bg-warning hover:bg-orange-600 text-white px-4 py-2 rounded transition-colors">
+                  查看未覆盖需求
+                </button>
+              </div>
+            </div>
+
+            <div class="p-4 bg-gray-50 rounded-lg mb-6">
+              <div class="text-sm text-gray-600">
+                覆盖链 (模拟)：需求 → 功能 → 架构 → 仿真 → 验证 | 支持双向导航与变更溯源 (模拟高亮)
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">追溯链图 (Mermaid动态生成)</h4>
+              <div class="grid grid-cols-1 gap-4">
+                <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 min-h-[300px] flex justify-center items-center">
+                   <div id="traceabilityMermaidGraph" class="mermaid"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">模型-需求-验证 映射表</h4>
+              <div class="overflow-x-auto">
+                <table id="traceabilityTable" class="w-full border-collapse border border-gray-200 rounded-lg">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">需求编号</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">功能模块</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">模型名称</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">验证方法</th>
+                      <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">状态</th>
+                    </tr>
+                  </thead>
+                  <tbody id="traceabilityTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <h4 class="font-medium text-gray-700 mb-3">变更影响分析 (模拟)</h4>
+              <div class="space-y-3 mb-4">
+                <label class="flex items-center space-x-3">
+                  <input type="checkbox" id="showImpactPath" checked class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                  <span class="text-sm text-gray-700">展示变更影响路径图（红色标示）</span>
+                </label>
+              </div>
+              <div class="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-sm text-gray-700">
+                  <span class="text-red-600 font-bold">●</span> (模拟) 表示该对象被变更需求直接影响；
+                  <span class="text-orange-500 font-bold">●</span> (模拟) 表示受传递影响。
+                </p>
+              </div>
+            </div>
+
+            <div class="mb-6 border-t border-gray-200 pt-6">
+              <h4 class="font-medium text-gray-700 mb-3">执行结果分析 (模拟)</h4>
+              <div class="p-4 bg-gray-50 rounded-lg mb-4">
+                <div class="text-sm text-gray-600 mb-2">
+                  执行任务编号：<span id="traceabilityRunId" class="font-semibold text-gray-800">N/A</span> |
+                  运行时间：<span id="traceabilityRunTime" class="font-semibold text-gray-800">N/A</span>
+                </div>
+                <div id="traceabilityRunSummary" class="text-sm text-gray-700">
+                  等待应用执行...
+                </div>
+                <div class="mt-2 space-x-4">
+                  <a href="#" id="traceabilityViewLogs" class="text-primary hover:underline text-sm">点击查看执行日志 (模拟)</a>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                 <!-- Replaced broken image -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a4/Business_Process_GRC_Traceability.svg/800px-Business_Process_GRC_Traceability.svg.png"
+                     alt="执行追溯分析示意图 (替换图)"
+                     class="w-full max-w-2xl mx-auto rounded shadow-sm border border-gray-200">
+              </div>
+              
+              <div>
+                <h5 class="font-medium text-gray-700 mb-2">运行控制台输出：</h5>
+                <div id="consoleOutput" class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-40 overflow-y-auto">
+                  <div>等待应用执行...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 flex justify-end">
+        <button id="executeCurrentApp" class="bg-success hover:bg-green-600 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+            <path fill-rule="evenodd" d="M2 10a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm6.39-2.908a.75.75 0 0 1 .766.027l3.5 2.25a.75.75 0 0 1 0 1.262l-3.5 2.25A.75.75 0 0 1 8 12.25v-4.5a.75.75 0 0 1 .39-.658Z" clip-rule="evenodd" />
+          </svg>
+          <span>立即执行当前应用</span>
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Previous modals and overlays -->
+  <!-- Generic Modal Structure (to be controlled by js/uiUtils.js) -->
+  <div id="genericModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 hidden items-center justify-center z-50 p-4 modal-backdrop">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="genericModalTitle" class="text-xl font-semibold text-gray-800">Modal Title</h3>
+        <button id="genericModalCloseButton" class="text-gray-500 hover:text-gray-700">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div id="genericModalBody" class="text-gray-700">
+        <!-- Modal content goes here -->
+      </div>
+      <div id="genericModalFooter" class="mt-6 flex justify-end space-x-3">
+        <!-- Modal buttons go here -->
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add/Edit Requirement Modal Form Content (to be injected into genericModalBody) -->
+  <template id="addEditRequirementFormTemplate">
+    <form id="requirementForm" class="space-y-4">
+      <div>
+        <label for="reqId" class="block text-sm font-medium text-gray-700 mb-1">需求编号</label>
+        <input type="text" id="reqId" name="id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+        <span id="reqIdError" class="text-red-500 text-xs mt-1"></span>
+      </div>
+      <div>
+        <label for="reqName" class="block text-sm font-medium text-gray-700 mb-1">需求名称</label>
+        <input type="text" id="reqName" name="name" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+        <span id="reqNameError" class="text-red-500 text-xs mt-1"></span>
+      </div>
+      <div>
+        <label for="reqDescription" class="block text-sm font-medium text-gray-700 mb-1">需求描述</label>
+        <textarea id="reqDescription" name="description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+      </div>
+      <div>
+        <label for="reqOwner" class="block text-sm font-medium text-gray-700 mb-1">负责人</label>
+        <input type="text" id="reqOwner" name="owner" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required>
+        <span id="reqOwnerError" class="text-red-500 text-xs mt-1"></span>
+      </div>
+       <div>
+        <label for="reqPriority" class="block text-sm font-medium text-gray-700 mb-1">优先级</label>
+        <select id="reqPriority" name="priority" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </div>
+      <input type="hidden" id="reqOriginalId" name="originalId"> <!-- For editing -->
+    </form>
+  </template>
 
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden items-center justify-center z-[60] modal-backdrop">
+    <div class="bg-white rounded-lg p-6 flex items-center space-x-4 shadow-xl">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <span class="text-gray-700">处理中...</span>
+    </div>
+  </div>
+
+  <!-- Notification Container -->
+  <div id="notificationContainer" class="fixed top-4 right-4 z-[70] space-y-2"></div>
+  
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

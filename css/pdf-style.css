@@ -1,0 +1,170 @@
+/* PDF风格样式 */
+.document-structure {
+  font-family: "SimSun", "宋体", serif;
+  line-height: 1.75;
+  color: #000;
+  background: #fff;
+  padding: 2rem;
+  max-width: 210mm; /* A4纸宽度 */
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 目录样式 */
+.toc {
+  border: 1px solid #eee;
+  background: #fafafa;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.toc h3 {
+  border-bottom: 2px solid #333;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.toc-item {
+  cursor: pointer;
+  padding: 0.25rem 0;
+  transition: all 0.2s;
+}
+
+.toc-item:hover {
+  color: #0052d9;
+  transform: translateX(4px);
+}
+
+.toc-item.active {
+  color: #0052d9;
+  font-weight: 500;
+}
+
+/* 章节样式 */
+.chapter {
+  margin-bottom: 2rem;
+  padding-top: 3rem;
+  scroll-margin-top: 2rem;
+}
+
+.chapter h2 {
+  font-size: 1.5rem;
+  margin: 2rem 0 1rem;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.5rem;
+}
+
+.sub-chapter {
+  margin: 1.5rem 0;
+  padding-left: 1.5rem;
+  border-left: 3px solid #f0f0f0;
+}
+
+.sub-chapter:hover {
+  border-left-color: #0052d9;
+}
+
+.sub-chapter h3 {
+  font-size: 1.25rem;
+  margin: 1.5rem 0 1rem;
+  color: #333;
+}
+
+/* 内容样式 */
+.content {
+  text-align: justify;
+  text-justify: inter-ideograph; /* 改善中文排版 */
+  letter-spacing: 0.05em;
+  min-height: 400px;
+}
+
+.content p {
+  margin-bottom: 1rem;
+  text-indent: 2em;
+  line-height: 1.75;
+}
+
+/* 表格样式 */
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+
+.doc-table th,
+.doc-table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.doc-table th {
+  background: #f9fafb;
+  font-weight: 500;
+}
+
+/* 打印优化 */
+@media print {
+  .document-structure {
+    box-shadow: none;
+    padding: 0;
+  }
+  
+  .toc {
+    break-after: page;
+  }
+  
+  .chapter {
+    break-inside: avoid;
+  }
+
+  .sub-chapter {
+    break-inside: avoid;
+  }
+}
+
+/* 滚动条美化 */
+.document-structure::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.document-structure::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.document-structure::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.document-structure::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chapter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .document-structure {
+    padding: 1rem;
+  }
+
+  .toc {
+    position: relative;
+    margin: -1rem -1rem 1rem -1rem;
+    border-radius: 0;
+  }
+}
