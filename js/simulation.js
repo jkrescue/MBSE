@@ -22,6 +22,8 @@ export class SimulationModule {
 
   init() {
     this.setupEventListeners();
+    this.renderSimulationArchitecture();
+    this.renderSimulationConfigCard();
     this.renderInitialChartPlaceholder();
   }
 
@@ -63,7 +65,7 @@ export class SimulationModule {
         displayFieldError('simulationCasesError', `工况数必须在 ${this.casesInput.min} 到 ${this.casesInput.max} 之间。`);
         isValid = false;
     }
-     if (isNaN(duration) || duration < parseInt(this.durationInput.min) || duration > parseInt(this.durationInput.max)) {
+    if (isNaN(duration) || duration < parseInt(this.durationInput.min) || duration > parseInt(this.durationInput.max)) {
         displayFieldError('simulationDurationError', `时长必须在 ${this.durationInput.min} 到 ${this.durationInput.max} 之间。`);
         isValid = false;
     }
@@ -92,6 +94,9 @@ export class SimulationModule {
         
         if (i === steps) { // Last step, generate results
              this.generateAndDisplayResults(cases, duration);
+             if (this.kpiCheckbox.checked) {
+                 this.generateKPIChart(cases);
+             }
         }
         await new Promise(resolve => setTimeout(resolve, stepDuration));
       }
@@ -117,7 +122,7 @@ export class SimulationModule {
       this.progressBar.style.width = '0%';
     }
   }
-  
+
   generateAndDisplayResults(cases, totalDuration) {
     // Simulate dynamic data generation
     const labels = Array.from({ length: 10 }, (_, i) => `T${i * (totalDuration/10)}s`); // Time points
@@ -194,9 +199,139 @@ export class SimulationModule {
     `;
   }
 
+  generateKPIChart(cases) {
+    const kpiContainer = document.createElement('div');
+    kpiContainer.classList.add('kpi-chart-container');
+
+    const kpiTitle = document.createElement('h3');
+    kpiTitle.textContent = 'KPI 指标权衡图';
+    kpiContainer.appendChild(kpiTitle);
+
+    const kpiCanvas = document.createElement('canvas');
+    kpiCanvas.id = 'kpiChart';
+    kpiContainer.appendChild(kpiCanvas);
+
+    this.resultsSummaryDiv.parentElement.appendChild(kpiContainer);
+
+    const labels = Array.from({ length: cases }, (_, i) => `工况 ${i + 1}`);
+    const data = labels.map(() => Math.random() * 100);
+
+    new Chart(kpiCanvas, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'KPI 指标',
+          data: data,
+          backgroundColor: ['rgba(75, 192, 192, 0.2)', 'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)'],
+          borderColor: ['rgba(75, 192, 192, 1)', 'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)'],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  }
+
   renderInitialChartPlaceholder() {
     if (this.chartInstance) this.chartInstance.destroy();
     this.chartCanvas.getContext('2d').clearRect(0,0,this.chartCanvas.width, this.chartCanvas.height); // Clear canvas
     this.resultsSummaryDiv.innerHTML = '<p class="text-gray-500 col-span-full text-center">运行仿真以查看结果。</p>';
+  }
+
+  renderSimulationArchitecture() {
+    const architectureDiv = document.createElement('div');
+    architectureDiv.classList.add('simulation-architecture');
+
+    const architectureTitle = document.createElement('h3');
+    architectureTitle.textContent = '系统联合仿真架构';
+    architectureDiv.appendChild(architectureTitle);
+
+    const architectureImage = document.createElement('img');
+    architectureImage.src = './pic/SSP1.png';
+    architectureImage.alt = '系统联合仿真架构';
+    architectureImage.classList.add('architecture-image');
+    architectureImage.style.cursor = 'pointer';
+    architectureImage.addEventListener('dblclick', () => {
+      architectureImage.src = architectureImage.src.includes('SSP1.png') ? './pic/SSP2.png' : './pic/SSP1.png';
+    });
+    architectureDiv.appendChild(architectureImage);
+
+    const modelTitle = document.createElement('h3');
+    modelTitle.textContent = '系统组件信息';
+    architectureDiv.appendChild(modelTitle);
+
+    const modelImage = document.createElement('img');
+    modelImage.src = './pic/Frame 1.png';
+    modelImage.alt = '系统组件信息';
+    modelImage.classList.add('model-image');
+    architectureDiv.appendChild(modelImage);
+
+    this.runButton.parentElement.insertBefore(architectureDiv, this.runButton);
+  }
+
+  renderSimulationConfigCard() {
+    const configContainer = document.createElement('div');
+    configContainer.classList.add('simulation-config-container');
+
+    for (let i = 1; i <= 3; i++) {
+      const configCard = document.createElement('div');
+      configCard.classList.add('simulation-config-card');
+      configCard.style.display = 'inline-block'; // 横向排列
+      configCard.style.marginRight = '10px';
+      configCard.style.border = '1px solid #ccc';
+      configCard.style.padding = '10px';
+      configCard.style.borderRadius = '5px';
+      configCard.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.1)';
+
+      const configTitle = document.createElement('h4');
+      configTitle.textContent = `工况 ${i} 配置`;
+      configTitle.style.textAlign = 'center';
+      configCard.appendChild(configTitle);
+
+      const powerLabel = document.createElement('label');
+      powerLabel.textContent = `工况 ${i} 电机功率 (kW):`;
+      const powerInput = document.createElement('input');
+      powerInput.type = 'number';
+      powerInput.min = '1';
+      powerInput.max = '500';
+      powerInput.value = (Math.random() * 500).toFixed(0);
+      powerInput.classList.add('config-input');
+      configCard.appendChild(powerLabel);
+      configCard.appendChild(powerInput);
+
+      const wheelbaseLabel = document.createElement('label');
+      wheelbaseLabel.textContent = `工况 ${i} 底盘轴距 (mm):`;
+      const wheelbaseInput = document.createElement('input');
+      wheelbaseInput.type = 'number';
+      wheelbaseInput.min = '2000';
+      wheelbaseInput.max = '4000';
+      wheelbaseInput.value = (2000 + Math.random() * 2000).toFixed(0);
+      wheelbaseInput.classList.add('config-input');
+      configCard.appendChild(wheelbaseLabel);
+      configCard.appendChild(wheelbaseInput);
+
+      const voltageLabel = document.createElement('label');
+      voltageLabel.textContent = `工况 ${i} 电池电压 (V):`;
+      const voltageInput = document.createElement('input');
+      voltageInput.type = 'number';
+      voltageInput.min = '200';
+      voltageInput.max = '800';
+      voltageInput.value = (200 + Math.random() * 600).toFixed(0);
+      voltageInput.classList.add('config-input');
+      configCard.appendChild(voltageLabel);
+      configCard.appendChild(voltageInput);
+
+      configContainer.appendChild(configCard);
+    }
+
+    this.casesInput.value = '3'; // 默认设置工况数为3
+    this.casesInput.parentElement.appendChild(configContainer);
   }
 }
