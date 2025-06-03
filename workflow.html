@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>工作流管理</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/workflow.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <div class="w-56 bg-white border-r border-gray-200 p-4">
+      <h3 class="font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">功能菜单</h3>
+      <ul class="space-y-2">
+        <li><a href="index.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">应用中心</a></li>
+        <li><a href="workflow.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">工作流管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">组件管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">工具服务</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">模型及数据管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">用户权限管理</a></li>
+      </ul>
+
+      <div class="mt-8 p-3 bg-gray-50 rounded-lg">
+        <h4 class="font-medium text-gray-700 mb-2">系统状态</h4>
+        <div class="text-sm text-gray-600 space-y-1">
+          <div class="flex justify-between">
+            <span>需求数:</span>
+            <span id="requirementCount" class="font-medium">0</span>
+          </div>
+          <div class="flex justify-between">
+            <span>模型数:</span>
+            <span id="modelCount" class="font-medium">0</span>
+          </div>
+          <div class="flex justify-between">
+            <span>验证通过:</span>
+            <span id="verificationCount" class="font-medium text-success">0/0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6">
+      <div class="container mx-auto p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">工作流管理</h1>
+        <button id="createWorkflow" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors mb-4">创建工作流</button>
+        <table class="w-full border-collapse border border-gray-200 rounded-lg">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">工作流名称</th>
+              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">状态</th>
+              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">创建时间</th>
+              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">操作</th>
+            </tr>
+          </thead>
+          <tbody id="workflowTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('createWorkflow').addEventListener('click', () => {
+      const workflowName = prompt('请输入工作流名称:');
+      if (workflowName) {
+        const workflowTableBody = document.getElementById('workflowTableBody');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="border border-gray-200 px-4 py-3 text-gray-700">${workflowName}</td>
+          <td class="border border-gray-200 px-4 py-3 text-gray-700">草稿</td>
+          <td class="border border-gray-200 px-4 py-3 text-gray-700">${new Date().toLocaleDateString()}</td>
+          <td class="border border-gray-200 px-4 py-3">
+            <button class="bg-primary hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">编辑</button>
+            <button class="bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">删除</button>
+          </td>
+        `;
+        workflowTableBody.appendChild(row);
+      }
+    });
+  </script>
+</body>
+</html>

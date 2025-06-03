@@ -39,4 +39,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     // window.mbseAppInstance = app; 
     
     app.init();
+    
+    // 模块切换处理
+    document.querySelectorAll('.sidebar-menu').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        const moduleName = btn.getAttribute('data-module');
+        switchModule(moduleName);
+      });
+    });
+
+    function switchModule(moduleName) {
+      // 隐藏所有模块内容
+      document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
+      // 显示选中的模块
+      const targetModule = document.getElementById(`${moduleName}-module`);
+      if (targetModule) {
+        targetModule.classList.remove('hidden');
+      }
+      
+      // 更新左侧菜单active状态
+      document.querySelectorAll('.sidebar-menu').forEach(el => {
+        el.classList.remove('bg-primary', 'text-white');
+        el.classList.add('text-gray-700', 'hover:bg-gray-100');
+      });
+      const activeMenu = document.querySelector(`.sidebar-menu[data-module="${moduleName}"]`);
+      if (activeMenu) {
+        activeMenu.classList.remove('text-gray-700', 'hover:bg-gray-100');
+        activeMenu.classList.add('bg-primary', 'text-white');
+      }
+    }
 });

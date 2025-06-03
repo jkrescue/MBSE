@@ -2,6 +2,9 @@ import { mbseData } from './data.js';
 import { showGenericModal, hideGenericModal, showNotification, showLoading, hideLoading } from './uiUtils.js';
 import { logError } from './logger.js';
 
+// 本文件仅用于设计追溯（Traceability）功能模块，不包含“工作流管理”或其他一级菜单内容。
+// 如需扩展一级菜单功能，请在独立的模块文件（如 workflow.js、components.js 等）中实现。
+
 export class TraceabilityModule {
   constructor() {
     this.traceabilityTableBody = document.getElementById('traceabilityTableBody');
@@ -92,43 +95,10 @@ export class TraceabilityModule {
   }
 
   async renderTraceabilityGraph() {
-    if (!this.traceabilityMermaidGraphDiv || !window.mermaid) return;
-    
-    let mermaidSyntax = 'graph LR;\n'; // Left-to-Right graph
-    const showImpact = this.showImpactPathCheckbox.checked;
-    const impactedElementId = this.traceabilityData.length > 0 ? this.traceabilityData[0].reqId : null; // Simulate R001 is impacted
+    if (!this.traceabilityMermaidGraphDiv) return;
 
-    if (this.traceabilityData.length === 0) {
-        mermaidSyntax += '    NoTrace["暂无追溯数据"];';
-    } else {
-        this.traceabilityData.forEach(item => {
-            const reqNode = `${item.reqId}[R: ${item.reqId}]`;
-            const funcNode = item.functionModuleId ? `${item.functionModuleId}[F: ${item.functionModule}]` : null;
-            const modelNode = `${item.modelName.replace(/[\.\s]/g,'_')}[M: ${item.modelName}]`; // Sanitize ID
-            const verifNode = `${item.verificationMethod.replace(/\s/g,'_')}[V: ${item.verificationMethod}]`;
-
-            mermaidSyntax += `    subgraph "Trace for ${item.reqId}"\n`;
-            mermaidSyntax += `        ${reqNode} --> ${funcNode || modelNode};\n`;
-            if (funcNode) mermaidSyntax += `        ${funcNode} --> ${modelNode};\n`;
-            mermaidSyntax += `        ${modelNode} --> ${verifNode};\n`;
-            mermaidSyntax += `    end\n`;
-
-            if (showImpact && item.reqId === impactedElementId) {
-                 mermaidSyntax += `    style ${item.reqId} fill:#f87171,stroke:#b91c1c,stroke-width:2px\n`; // Red for direct impact
-                 if(funcNode) mermaidSyntax += `    style ${item.functionModuleId} fill:#fbbf24,stroke:#d97706,stroke-width:2px\n`; // Yellow for indirect
-            }
-        });
-    }
-    
-    this.traceabilityMermaidGraphDiv.innerHTML = ''; // Clear previous
-    this.traceabilityMermaidGraphDiv.setAttribute('data-mermaid', mermaidSyntax);
-    try {
-        const { svg } = await window.mermaid.render('traceabilitySvgId', mermaidSyntax);
-        this.traceabilityMermaidGraphDiv.innerHTML = svg;
-    } catch (e) {
-        this.traceabilityMermaidGraphDiv.innerHTML = `Error rendering graph: ${e.message}`;
-        logError('TraceabilityModule', 'renderTraceabilityGraph', e);
-    }
+    // Replace Mermaid graph rendering with static image
+    this.traceabilityMermaidGraphDiv.innerHTML = '<img src="./pic/try_img_4.png" alt="追溯链图" style="max-width: 100%; height: auto;">';
   }
   
   handleTraceElementClick(clickedCell) {

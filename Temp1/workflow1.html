@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <title>工作流管理 - MBSE应用中心</title>
+  <style>
+    body {
+      font-family: "PingFang SC", sans-serif;
+      margin: 0;
+      background-color: #f5f7fa;
+    }
+    .header {
+      background: #fff;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #dcdfe6;
+    }
+    .header h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    .workflow-container {
+      padding: 24px;
+    }
+    .workflow-toolbar {
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .workflow-toolbar button {
+      background-color: #409eff;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ebeef5;
+      text-align: center;
+    }
+    th {
+      background: #f2f6fc;
+      font-weight: 600;
+    }
+    .status-running {
+      color: #67c23a;
+    }
+    .status-pending {
+      color: #e6a23c;
+    }
+    .status-failed {
+      color: #f56c6c;
+    }
+    .action-btn {
+      color: #409eff;
+      cursor: pointer;
+      margin: 0 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>工作流管理</h1>
+  </div>
+  <div class="workflow-container">
+    <div class="workflow-toolbar">
+      <div>
+        <button onclick="alert('新建工作流')">+ 新建工作流</button>
+      </div>
+      <div>
+        <button onclick="alert('导入BPMN')">导入 BPMN</button>
+        <button onclick="alert('导出数据')">导出数据</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>流程编号</th>
+          <th>流程名称</th>
+          <th>状态</th>
+          <th>触发对象</th>
+          <th>版本</th>
+          <th>负责人</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>WF001</td>
+          <td>需求评审流程</td>
+          <td class="status-running">运行中</td>
+          <td>需求 R001</td>
+          <td>v1.0</td>
+          <td>王工</td>
+          <td>
+            <span class="action-btn" onclick="alert('查看流程')">查看</span>
+            <span class="action-btn" onclick="alert('停止流程')">停止</span>
+          </td>
+        </tr>
+        <tr>
+          <td>WF002</td>
+          <td>仿真验证流程</td>
+          <td class="status-pending">待启动</td>
+          <td>模型 M002</td>
+          <td>v2.1</td>
+          <td>李工</td>
+          <td>
+            <span class="action-btn" onclick="alert('启动流程')">启动</span>
+            <span class="action-btn" onclick="alert('删除流程')">删除</span>
+          </td>
+        </tr>
+        <tr>
+          <td>WF003</td>
+          <td>设计追溯流程</td>
+          <td class="status-failed">失败</td>
+          <td>R003 & M004</td>
+          <td>v1.3</td>
+          <td>赵工</td>
+          <td>
+            <span class="action-btn" onclick="alert('重新执行')">重试</span>
+            <span class="action-btn" onclick="alert('查看日志')">日志</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
