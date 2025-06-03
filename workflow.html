@@ -3,22 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>工作流管理</title>
+  <title>MBSE 应用中心 - 工作流管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="css/styles.css">
-  <script type="module" src="js/workflow.js"></script>
+  <link rel="stylesheet" href="css/pdf-style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.js';
+    window.mermaid = mermaid;
+  </script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0052d9',
+            success: '#67c23a',
+            warning: '#e6a23c',
+            danger: '#f56c6c',
+            info: '#409eff',
+            gray: {
+              50: '#f5f7fa',
+              100: '#f0f2f5',
+              200: '#e4e7ed',
+              300: '#dcdfe6',
+              400: '#c0c4cc',
+              500: '#909399',
+              600: '#606266',
+              700: '#409eff',
+              800: '#303133',
+              900: '#1f2937'
+            }
+          }
+        }
+      }
+    }
+  </script>
 </head>
 <body class="bg-gray-50 font-sans">
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-300 px-6 py-4 flex justify-between items-center shadow-sm sticky top-0 z-40">
+    <h1 class="text-xl font-semibold text-gray-800">工作流管理 - MBSE应用中心</h1>
+  </div>
+
   <div class="flex min-h-screen">
     <!-- Sidebar -->
     <div class="w-56 bg-white border-r border-gray-200 p-4">
       <h3 class="font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">功能菜单</h3>
       <ul class="space-y-2">
-        <li><a href="index.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">应用中心</a></li>
-        <li><a href="workflow.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">工作流管理</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">组件管理</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">工具服务</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">模型及数据管理</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">用户权限管理</a></li>
+        <li><a href="index.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">应用中心</a></li>
+        <li><a href="workflow.html" class="block px-3 py-2 text-white bg-primary rounded transition-colors font-semibold">工作流管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">组件管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">工具服务</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">模型及数据管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">用户权限管理</a></li>
       </ul>
 
       <div class="mt-8 p-3 bg-gray-50 rounded-lg">
@@ -42,42 +82,87 @@
 
     <!-- Main Content -->
     <div class="flex-1 p-6">
-      <div class="container mx-auto p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4">工作流管理</h1>
-        <button id="createWorkflow" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors mb-4">创建工作流</button>
-        <table class="w-full border-collapse border border-gray-200 rounded-lg">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">工作流名称</th>
-              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">状态</th>
-              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">创建时间</th>
-              <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">操作</th>
-            </tr>
-          </thead>
-          <tbody id="workflowTableBody"></tbody>
-        </table>
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <img src="pic/工作流流程.png" alt="工作流顶部图片" class="max-w-full h-auto rounded shadow-sm">
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-lg font-semibold text-gray-800">工作流列表</h3>
+          <button id="createWorkflow" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded transition-colors text-sm">+ 创建工作流</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse border border-gray-200 rounded-lg">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">名称</th>
+                <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">版本</th>
+                <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">状态</th>
+                <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">应用领域</th>
+                <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">创建时间</th>
+                <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">创建人</th>
+                <th class="border border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-700">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">热管理流程</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">v1.0</td>
+                <td class="border border-gray-200 px-4 py-3 text-green-600 font-medium">已发布</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">汽车热管理</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">2025-06-03</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">张力达</td>
+                <td class="border border-gray-200 px-4 py-3">
+                  <button class="bg-primary hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">编辑</button>
+                  <button class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">复制</button>
+                  <button class="bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">删除</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">整车集成流程</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">v2.3</td>
+                <td class="border border-gray-200 px-4 py-3 text-yellow-600 font-medium">未发布</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">整车系统集成</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">2025-05-12</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">李晓明</td>
+                <td class="border border-gray-200 px-4 py-3">
+                  <button class="bg-primary hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">编辑</button>
+                  <button class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">复制</button>
+                  <button class="bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">删除</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">功能安全分析流程</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">v1.1</td>
+                <td class="border border-gray-200 px-4 py-3 text-green-600 font-medium">已发布</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">汽车功能安全</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">2025-04-20</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">赵子涵</td>
+                <td class="border border-gray-200 px-4 py-3">
+                  <button class="bg-primary hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">编辑</button>
+                  <button class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">复制</button>
+                  <button class="bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">删除</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">热仿真模型验证</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">v0.9</td>
+                <td class="border border-gray-200 px-4 py-3 text-yellow-600 font-medium">未发布</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">仿真模型验证</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">2025-03-10</td>
+                <td class="border border-gray-200 px-4 py-3 text-gray-700">王磊</td>
+                <td class="border border-gray-200 px-4 py-3">
+                  <button class="bg-primary hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">编辑</button>
+                  <button class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm">复制</button>
+                  <button class="bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">删除</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
-
-  <script>
-    document.getElementById('createWorkflow').addEventListener('click', () => {
-      const workflowName = prompt('请输入工作流名称:');
-      if (workflowName) {
-        const workflowTableBody = document.getElementById('workflowTableBody');
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td class="border border-gray-200 px-4 py-3 text-gray-700">${workflowName}</td>
-          <td class="border border-gray-200 px-4 py-3 text-gray-700">草稿</td>
-          <td class="border border-gray-200 px-4 py-3 text-gray-700">${new Date().toLocaleDateString()}</td>
-          <td class="border border-gray-200 px-4 py-3">
-            <button class="bg-primary hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">编辑</button>
-            <button class="bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">删除</button>
-          </td>
-        `;
-        workflowTableBody.appendChild(row);
-      }
-    });
-  </script>
 </body>
 </html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>工作流建模器</title>
+  <script src="https://unpkg.com/bpmn-js@11.5.0/dist/bpmn-modeler.development.js"></script>
+  <style>
+    html, body, #canvas {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <h2 style="margin: 10px;">建模器 - 工作流名称: <span id="workflowName"></span></h2>
+  <div id="canvas" style="height: 90vh; border: 1px solid #ccc;"></div>
+  <button onclick="saveModel()">保存工作流</button>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const name = urlParams.get('workflow') || '未命名';
+    document.getElementById('workflowName').innerText = name;
+
+    const bpmnModeler = new BpmnJS({ container: '#canvas' });
+
+    async function saveModel() {
+      const result = await bpmnModeler.saveXML({ format: true });
+      const xml = result.xml;
+      const workflows = JSON.parse(localStorage.getItem('workflows') || '[]');
+      const index = workflows.findIndex(w => w.name === name);
+      if (index !== -1) {
+        workflows[index].status = '已建模';
+        workflows[index].xml = xml;
+        localStorage.setItem('workflows', JSON.stringify(workflows));
+        alert('保存成功！');
+      }
+    }
+
+    bpmnModeler.createDiagram();
+  </script>
+</body>
+</html>

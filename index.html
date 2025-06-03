@@ -60,13 +60,14 @@
     <!-- Sidebar -->
     <div class="w-56 bg-white border-r border-gray-200 p-4">
       <h3 class="font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">功能菜单</h3>
+      <!-- 默认高亮功能菜单的“应用中心”标签 -->
       <ul class="space-y-2">
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu" data-tab="applications">应用中心</a></li>
-        <li><a href="workflow.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu">工作流管理</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu" data-tab="components">组件管理</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu" data-tab="tools">工具服务</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu" data-tab="models">模型及数据管理</a></li>
-        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors tab-menu" data-tab="users">用户权限管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-white bg-primary rounded transition-colors font-semibold">应用中心</a></li>
+        <li><a href="workflow.html" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">工作流管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">组件管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">工具服务</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">模型及数据管理</a></li>
+        <li><a href="#" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded transition-colors">用户权限管理</a></li>
       </ul>
 
       <div class="mt-8 p-3 bg-gray-50 rounded-lg">
@@ -90,9 +91,9 @@
 
     <!-- Main Content -->
     <div class="flex-1 p-6">
-      <!-- 在主内容区域添加iframe以动态加载工作流管理内容 -->
-      <div id="main-content" class="flex-1 p-6">
-        <!-- 动态加载的工作流管理内容将插入在这里 -->
+      <!-- 在需求管理等卡片的上方添加图片 -->
+      <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+        <img src="pic/workflow_top.png" alt="工作流顶部图片" class="max-w-full h-auto rounded shadow-sm">
       </div>
 
       <div class="flex bg-gray-100 p-1 rounded-lg mb-6">
@@ -381,43 +382,6 @@
             </div>
           </div>
         </div>
-
-        <div id="workflow-tab" class="tab-content hidden">
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-6">工作流管理</h3>
-            <div id="workflowCanvas" class="bg-gray-100 p-4 rounded-lg shadow-md">
-              <p class="text-gray-600">此处将显示工作流管理的内容。</p>
-            </div>
-          </div>
-        </div>
-
-        <div id="components-tab" class="tab-content hidden">
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">组件管理</h2>
-            <p>这里是组件管理的内容。</p>
-          </div>
-        </div>
-
-        <div id="tools-tab" class="tab-content hidden">
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">工具服务</h2>
-            <p>这里是工具服务的内容。</p>
-          </div>
-        </div>
-
-        <div id="models-tab" class="tab-content hidden">
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">模型及数据管理</h2>
-            <p>这里是模型及数据管理的内容。</p>
-          </div>
-        </div>
-
-        <div id="users-tab" class="tab-content hidden">
-          <div class="bg-white rounded-lg shadow-sm p-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">用户权限管理</h2>
-            <p>这里是用户权限管理的内容。</p>
-          </div>
-        </div>
       </div>
 
       <div class="mt-8 flex justify-end">
@@ -497,134 +461,16 @@
   <div id="notificationContainer" class="fixed top-4 right-4 z-[70] space-y-2"></div>
   
   <script type="module" src="js/main.js"></script>
-  <script type="module" src="js/workflow.js"></script>
-  <script type="module">
-import { ApplicationsModule } from './js/applications.js';
-import { WorkflowModule } from './js/workflow.js';
-import { ComponentsModule } from './js/components.js';
-import { ToolsModule } from './js/tools.js';
-import { ModelsModule } from './js/models.js';
-import { UsersModule } from './js/users.js';
+  <!-- 添加点击“工作流管理”弹出工作流管理页面的功能 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const workflowLink = document.querySelector('a[href="workflow.html"]');
 
-const modules = {
-  applications: new ApplicationsModule(),
-  workflow: new WorkflowModule(),
-  components: new ComponentsModule(),
-  tools: new ToolsModule(),
-  models: new ModelsModule(),
-  users: new UsersModule(),
-};
-
-function switchModule(tab) {
-  Object.keys(modules).forEach((key) => {
-    const tabContent = document.getElementById(`${key}TabContent`);
-    if (key === tab) {
-      tabContent.classList.remove('hidden');
-      modules[key].init();
-    } else {
-      tabContent.classList.add('hidden');
-    }
-  });
-}
-
-document.querySelectorAll('.tab-menu').forEach((menu) => {
-  menu.addEventListener('click', (event) => {
-    const tab = event.target.dataset.tab;
-    switchModule(tab);
-  });
-});
-
-// 默认加载“应用中心”模块
-switchModule('applications');
-
-// 修改为动态加载工作流管理内容
-document.querySelector('a[href="workflow.html"]').addEventListener('click', function(event) {
-    event.preventDefault();
-    window.location.href = 'workflow.html';
-  });
-</script>
-
-<!-- 添加模块内容容器 -->
-<div id="applicationsTabContent" class="tab-content">
-  <h2 class="text-xl font-semibold text-gray-800 mb-4">应用中心</h2>
-  <p>这里是应用中心的内容。</p>
-</div>
-<div id="workflowTabContent" class="tab-content hidden">
-  <iframe src="workflow.html" class="w-full h-screen border-none"></iframe>
-</div>
-<div id="componentsTabContent" class="tab-content hidden">
-  <h2 class="text-xl font-semibold text-gray-800 mb-4">组件管理</h2>
-  <p>这里是组件管理的内容。</p>
-</div>
-<div id="toolsTabContent" class="tab-content hidden">
-  <h2 class="text-xl font-semibold text-gray-800 mb-4">工具服务</h2>
-  <p>这里是工具服务的内容。</p>
-</div>
-<div id="modelsTabContent" class="tab-content hidden">
-  <h2 class="text-xl font-semibold text-gray-800 mb-4">模型及数据管理</h2>
-  <p>这里是模型及数据管理的内容。</p>
-</div>
-<div id="usersTabContent" class="tab-content hidden">
-  <h2 class="text-xl font-semibold text-gray-800 mb-4">用户权限管理</h2>
-  <p>这里是用户权限管理的内容。</p>
-</div>
-
-<script type="module">
-  // 动态切换内容逻辑
-  document.querySelectorAll('.tab-menu').forEach((menu) => {
-    menu.addEventListener('click', (event) => {
-      event.preventDefault();
-      const tab = event.target.dataset.tab;
-      document.querySelectorAll('.tab-content').forEach((content) => {
-        content.classList.add('hidden');
+      workflowLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        window.location.href = 'workflow.html';
       });
-      const activeContent = document.getElementById(`${tab}TabContent`);
-      if (activeContent) {
-        activeContent.classList.remove('hidden');
-      }
     });
-  });
-
-  // 初始化交互逻辑
-  document.addEventListener('DOMContentLoaded', () => {
-    // 工作流管理交互逻辑
-    const createWorkflowButton = document.getElementById('createWorkflow');
-    if (createWorkflowButton) {
-      createWorkflowButton.addEventListener('click', () => {
-        const workflowName = prompt('请输入工作流名称:');
-        if (workflowName) {
-          const workflowTableBody = document.getElementById('workflowTableBody');
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td class="border border-gray-200 px-4 py-3 text-gray-700">${workflowName}</td>
-            <td class="border border-gray-200 px-4 py-3 text-gray-700">草稿</td>
-            <td class="border border-gray-200 px-4 py-3 text-gray-700">${new Date().toLocaleDateString()}</td>
-            <td class="border border-gray-200 px-4 py-3">
-              <button class="bg-primary hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">编辑</button>
-              <button class="bg-danger hover:bg-red-600 text-white px-3 py-1 rounded text-sm">删除</button>
-            </td>
-          `;
-          workflowTableBody.appendChild(row);
-        }
-      });
-    }
-
-    // 工具服务交互逻辑
-    const toolsTabContent = document.getElementById('toolsTabContent');
-    if (toolsTabContent) {
-      toolsTabContent.addEventListener('click', () => {
-        alert('工具服务功能正在开发中！');
-      });
-    }
-
-    // 组件管理交互逻辑
-    const componentsTabContent = document.getElementById('componentsTabContent');
-    if (componentsTabContent) {
-      componentsTabContent.addEventListener('click', () => {
-        alert('组件管理功能正在开发中！');
-      });
-    }
-  });
-</script>
+  </script>
 </body>
 </html>
