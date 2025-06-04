@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>工作流编排画布</title>
+  <script src="https://cdn.jsdelivr.net/npm/@antv/x6@1.33.1/dist/x6.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@antv/x6@1.33.1/dist/x6.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #container { height: 100%; }
+    #wrapper { height: calc(100% - 0px); display: flex; }
+    #stencil { width: 180px; border-right: 1px solid #eee; padding: 10px; box-sizing: border-box; }
+    #graphContainer { flex: 1; }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <div id="stencil">
+      <div class="item" data-shape="start">开始</div>
+      <div class="item" data-shape="task">任务</div>
+      <div class="item" data-shape="gateway">网关</div>
+      <div class="item" data-shape="end">结束</div>
+    </div>
+    <div id="graphContainer">
+      <div id="container"></div>
+    </div>
+  </div>
+  <script src="canvas.js"></script>
+</body>
+</html>
