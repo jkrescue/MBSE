@@ -1,0 +1,12 @@
+#stencil .item {
+  border: 1px solid #ccc;
+  padding: 6px;
+  margin-bottom: 4px;
+  text-align: center;
+  background: #f9f9f9;
+  cursor: grab;
+}
+
+#stencil .item:active {
+  cursor: grabbing;
+}
