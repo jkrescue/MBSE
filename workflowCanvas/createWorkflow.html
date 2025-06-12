@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>工作流编排画布</title>
+  <script src="https://cdn.jsdelivr.net/npm/@antv/x6@1.33.1/dist/x6.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@antv/x6@1.33.1/dist/x6.css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body { height: 100%; margin: 0; }
+    #container { height: 100%; }
+    #wrapper { height: calc(100% - 0px); display: flex; }
+    #stencil { width: 180px; border-right: 1px solid #eee; padding: 10px; box-sizing: border-box; }
+    #graphContainer { flex: 1; }
+    #configPanel {
+      width: 300px;
+      border-left: 1px solid #eee;
+      padding: 10px;
+      box-sizing: border-box;
+      display: none;
+    }
+    #configPanel.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="wrapper">
+    <div id="stencil">
+      <div class="item" data-shape="start">开始</div>
+      <div class="item" data-shape="task">任务</div>
+      <div class="item" data-shape="exclusive">网关 (Exclusive)</div>
+      <div class="item" data-shape="inclusive">网关 (Inclusive)</div>
+      <div class="item" data-shape="end">结束</div>
+    </div>
+    <div id="graphContainer">
+      <div id="container"></div>
+    </div>
+    <div id="configPanel">
+      <h3>节点配置</h3>
+      <div id="nodeConfig"></div>
+      <button id="saveWorkflow" class="bg-primary text-white px-4 py-2 rounded">保存</button>
+      <button id="closeWorkflow" class="bg-gray-500 text-white px-4 py-2 rounded">关闭</button>
+    </div>
+  </div>
+  <script src="canvas.js"></script>
+  <script>
+    const configPanel = document.getElementById('configPanel');
+    const nodeConfig = document.getElementById('nodeConfig');
+    const saveWorkflowButton = document.getElementById('saveWorkflow');
+    const closeWorkflowButton = document.getElementById('closeWorkflow');
+
+    // 模拟节点选择事件
+    document.querySelectorAll('.item').forEach(item => {
+      item.addEventListener('click', () => {
+        configPanel.classList.add('active');
+        nodeConfig.innerHTML = `<p>配置: ${item.textContent}</p>`;
+      });
+    });
+
+    saveWorkflowButton.addEventListener('click', () => {
+      const workflowName = prompt('请输入工作流名称：', '新工作流');
+      if (workflowName) {
+        const workflowDescription = prompt('请输入工作流描述：', '描述内容');
+        const workflowData = {
+          name: workflowName,
+          description: workflowDescription,
+          date: new Date().toISOString().split('T')[0]
+        };
+        // 跳转回 workflow.html 并传递数据
+        window.location.href = `../workflow.html?name=${encodeURIComponent(workflowData.name)}&description=${encodeURIComponent(workflowData.description)}&date=${encodeURIComponent(workflowData.date)}`;
+      }
+    });
+
+    closeWorkflowButton.addEventListener('click', () => {
+      // 直接返回上一层界面
+      window.location.href = '../workflow.html';
+    });
+  </script>
+</body>
+</html>
