@@ -1,0 +1,337 @@
+.version-page {
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+.version-page h1, .version-page h2 {
+  color: #2c3e50;
+  border-bottom: 2px solid #1abc9c;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.model-selector-container {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.model-selector-container label {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #34495e;
+}
+
+.model-selector-container select {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  min-width: 250px;
+  cursor: pointer;
+}
+
+.version-history {
+  margin-top: 2rem;
+}
+
+.version-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.version-item {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-left: 5px solid #1abc9c;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.version-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.version-info h3 {
+  margin-top: 0;
+  color: #16a085;
+}
+
+.version-info p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.version-info p strong {
+  color: #333;
+}
+
+.version-actions .btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-left: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.version-actions .btn-primary {
+  background-color: #3498db;
+}
+
+.version-actions .btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.version-actions .btn-secondary {
+  background-color: #95a5a6;
+}
+
+.version-actions .btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+.version-item.selected {
+  background-color: #e9f5ff;
+  border-left-color: #3498db;
+}
+
+.version-select {
+  padding-right: 1.5rem;
+}
+
+.version-select input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.version-actions .btn-danger {
+  background-color: #e74c3c;
+}
+
+.version-actions .btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.compare-actions {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.comparison-view {
+  background-color: #fdfefe;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 1rem;
+}
+
+.comparison-columns {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.comparison-column {
+  flex: 1;
+  background-color: #fff;
+  padding: 1.5rem;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+}
+
+.diff-highlight {
+  background-color: #fff3cd;
+  color: #b86a00;
+  border-radius: 3px;
+  padding: 2px 4px;
+}
+
+.version-detail-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.version-detail-content {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: 8px;
+  min-width: 320px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+  position: relative;
+}
+
+.diff-desc {
+  margin: 1.5rem 0 1rem 0;
+  font-weight: bold;
+  color: #b86a00;
+  background: #fffbe6;
+  border-radius: 4px;
+  padding: 10px 16px;
+}
+
+.file-diff-block {
+  margin: 1.2rem 0;
+  border: 1px solid #e1e4e8;
+  border-radius: 5px;
+  background: #f8fafd;
+}
+.file-diff-header {
+  display: flex;
+  justify-content: space-between;
+  background: #f6f8fa;
+  font-weight: bold;
+  padding: 6px 16px;
+  border-bottom: 1px solid #e1e4e8;
+}
+.file-diff-body {
+  display: flex;
+  flex-direction: column;
+}
+.file-diff-line {
+  display: flex;
+  font-size: 0.9em;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+}
+.file-diff-line pre {
+  flex: 1;
+  margin: 0;
+  padding: 2px 8px;
+  font-size: 0.95em;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  background: none;
+  border: none;
+  min-height: 1.5em;
+}
+.file-diff-equal pre {
+  background: #fff;
+}
+.file-diff-added pre {
+  background: #e6ffed;
+  color: #22863a;
+}
+.file-diff-removed pre {
+  background: #ffeef0;
+  color: #b31d28;
+}
+.file-diff-changed pre {
+  background: #fff5b1;
+  color: #735c0f;
+}
+
+.btn-warning {
+  background: #ffd33d;
+  color: #735c0f;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 14px;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: background 0.2s;
+}
+.btn-warning:hover {
+  background: #ffea7f;
+}
+
+.file-detail-block {
+  margin: 1.2rem 0;
+  border: 1px solid #e1e4e8;
+  border-radius: 5px;
+  background: #f8fafd;
+}
+.file-detail-header {
+  background: #f6f8fa;
+  font-weight: bold;
+  padding: 6px 16px;
+  border-bottom: 1px solid #e1e4e8;
+}
+.file-detail-content {
+  padding: 10px 16px;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  background: #fff;
+  font-size: 0.97em;
+  white-space: pre-wrap;
+}
+
+.file-diff-conclusion {
+  padding: 8px 16px;
+  background-color: #f1f8ff;
+  color: #0366d6;
+  border-bottom: 1px solid #e1e4e8;
+  font-weight: bold;
+}
+
+.line-num {
+  flex: 0 0 40px;
+  padding: 2px 8px;
+  text-align: right;
+  color: rgba(27,31,35,0.3);
+  background-color: #f6f8fa;
+  border-right: 1px solid #e1e4e8;
+  user-select: none;
+}
+
+.line-content {
+  flex: 1 1 50%;
+  margin: 0;
+  padding: 2px 8px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  min-height: 1.5em;
+  border: none;
+  background: none;
+}
+
+.file-diff-line pre.line-content {
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 1em;
+}
+
+.file-diff-equal .line-content {
+  background: #fff;
+}
+.file-diff-added .line-content.right {
+  background: #e6ffed;
+}
+.file-diff-removed .line-content.left {
+  background: #ffeef0;
+}
+
+.file-diff-added .line-content.left,
+.file-diff-removed .line-content.right {
+  background: #fafbfc;
+}
+
+.file-diff-added .line-num.left,
+.file-diff-removed .line-num.right {
+  border-right-color: transparent;
+  background-color: #f6f8fa;
+}
+
+/* Overwrite old styles */
+.file-diff-added pre,
+.file-diff-removed pre,
+.file-diff-changed pre {
+  background: none; /* Reset simpler styles */
+} 

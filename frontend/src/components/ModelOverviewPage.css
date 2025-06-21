@@ -116,4 +116,28 @@
 
 .status-draft {
   background-color: #6c757d; /* Gray */
+}
+
+.models-table .model-name-link {
+  color: #3498db;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.models-table .model-name-link:hover {
+  text-decoration: underline;
+}
+
+.action-button {
+  padding: 5px 10px;
+  background-color: #1abc9c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.action-button:hover {
+  background-color: #16a085;
 } 
