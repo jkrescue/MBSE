@@ -1,0 +1,119 @@
+/* Layout for the overview page */
+.model-overview-page {
+  display: flex;
+  gap: 40px;
+}
+
+/* Filters Sidebar */
+.filters-container {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  height: fit-content;
+}
+
+.filters-container h2, .filters-container h4 {
+  margin-top: 0;
+  color: #343a40;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.filters-container .search-input, .filters-container .type-select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+  box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+/* Tags Filtering */
+.tags-filter {
+  margin-top: 20px;
+}
+
+.tags-filter .tag-filter-item {
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 5px;
+  background-color: #e9ecef;
+  border-radius: 15px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tags-filter .tag-filter-item:hover {
+  background-color: #ced4da;
+}
+
+.tags-filter .tag-filter-item.active {
+  background-color: #007bff;
+  color: white;
+}
+
+
+/* Models Table */
+.models-container {
+  flex-grow: 1;
+}
+
+.models-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  overflow: hidden;
+}
+
+.models-table th, .models-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.models-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.models-table tbody tr {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.models-table tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+.models-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badge Styling */
+.status-badge {
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-published {
+  background-color: #28a745; /* Green */
+}
+
+.status-pending {
+  background-color: #ffc107; /* Yellow */
+  color: #333;
+}
+
+.status-draft {
+  background-color: #6c757d; /* Gray */
+} 

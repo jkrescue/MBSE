@@ -1,0 +1,90 @@
+.upload-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.upload-page h2 {
+    text-align: center;
+    color: #343a40;
+}
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+  padding: 12px;
+  border: 1px solid #ced4da;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.form-group input[type="file"] {
+    padding: 10px;
+    background-color: #f8f9fa;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.tags-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+}
+
+.tag-item {
+    padding: 5px 12px;
+    background-color: #e9ecef;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tag-item:hover {
+    background-color: #ced4da;
+}
+
+.tag-item.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+.submit-button {
+  padding: 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #28a745;
+  color: white;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submit-button:hover {
+  background-color: #218838;
+} 
