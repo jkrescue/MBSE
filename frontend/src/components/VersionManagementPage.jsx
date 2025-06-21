@@ -87,13 +87,29 @@ function diffSysMLStruct(struct1, struct2) {
   return diffList;
 }
 
-const VersionManagementPage = ({ model: initialModel, models: allModels }) => {
+// 虚拟用户和角色体系
+const USER_LIST = [
+  { name: 'frank', role: 'admin' },         // 平台管理员
+  { name: 'alice', role: 'uploader' },     // 模型开发者
+  { name: 'bob', role: 'uploader' },       // 模型开发者
+  { name: 'charlie', role: 'user' },       // 普通用户
+  { name: 'david', role: 'user' },         // 普通用户
+  { name: 'eve', role: 'reviewer' }        // 审核人/专家
+];
+
+const ROLE_OPTIONS = [
+  { value: 'admin', label: '管理员' },
+  { value: 'uploader', label: '上传者' },
+  { value: 'reviewer', label: '审核人' },
+  { value: 'user', label: '普通用户' },
+];
+
+const VersionManagementPage = ({ model: initialModel, models: allModels, currentUser, currentRole }) => {
   const [model, setModel] = useState(initialModel);
   const [allModelsData, setAllModelsData] = useState(allModels);
   const [compareSelection, setCompareSelection] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
   const [detailVersion, setDetailVersion] = useState(null);
-  const [currentUser] = useState('系统'); // 可替换为真实登录用户
 
   useEffect(() => {
     setModel(initialModel);
@@ -302,8 +318,19 @@ const VersionManagementPage = ({ model: initialModel, models: allModels }) => {
     </div>
   );
 
+  // 只显示当前用户和角色
+  const renderUserInfo = () => (
+    <div style={{marginBottom: '1.2em', display:'flex', alignItems:'center', gap:'1em'}}>
+      <span style={{fontWeight:600}}>当前用户：</span>
+      <span style={{padding:'6px 12px', fontSize:'1em', borderRadius:4, background:'#f6f8fa', border:'1px solid #ccc'}}>{currentUser}</span>
+      <span style={{fontWeight:600}}>当前角色：</span>
+      <span style={{padding:'6px 12px', fontSize:'1em', borderRadius:4, background:'#f6f8fa', border:'1px solid #ccc'}}>{currentRole || '—'}</span>
+    </div>
+  );
+
   return (
     <div className="version-page">
+      {renderUserInfo()}
       <h1>版本管理</h1>
       {!initialModel && (
         <div className="model-selector-container">

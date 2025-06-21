@@ -108,7 +108,7 @@ function App() {
       case 'permissions':
         return <PermissionManagementPage />;
       case 'versions':
-        return <VersionManagementPage model={selectedModelForVersions} models={models} />;
+        return <VersionManagementPage model={selectedModelForVersions} models={models} currentUser={currentUser} currentRole={userList[currentUser]?.role} />;
       case 'review':
         return <ReviewPanel models={models} onReview={handleReview} />;
       case 'references':
@@ -138,7 +138,9 @@ function App() {
             </button>
             {showManagementDropdown && (
               <div className="dropdown-menu">
-                <button onClick={() => navigateTo('permissions')}>权限管理</button>
+                {currentUser.toLowerCase() === 'frank' && (
+                  <button onClick={() => navigateTo('permissions')}>权限管理</button>
+                )}
                 <button onClick={() => navigateTo('versions')}>版本管理</button>
                 <button onClick={() => navigateTo('review')}>评审面板</button>
                 <button onClick={() => navigateTo('references')}>引用信息</button>

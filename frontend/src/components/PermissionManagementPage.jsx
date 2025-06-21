@@ -2,25 +2,38 @@ import React, { useState } from 'react';
 import './PermissionManagementPage.css';
 import { FaUser, FaKey } from 'react-icons/fa';
 
+// 用户和角色数据
 const initialUsers = [
-  { id: 1, username: 'admin', role: '平台管理员' },
-  { id: 2, username: 'dev_user_1', role: '模型开发者' },
-  { id: 3, username: 'guest_user', role: '普通用户' },
-  { id: 4, username: 'dev_user_2', role: '模型开发者' },
-  { id: 5, username: 'test_user', role: '普通用户' },
+  { id: 1, username: 'frank', role: '平台管理员' },
+  { id: 2, username: 'alice', role: '模型开发者' },
+  { id: 3, username: 'bob', role: '模型开发者' },
+  { id: 4, username: 'charlie', role: '普通用户' },
+  { id: 5, username: 'david', role: '普通用户' },
+  { id: 6, username: 'eve', role: '审核人/专家' },
 ];
 
 const rolePermissions = {
   '平台管理员': ['管理用户和角色', '配置系统全局设置', '审批模型', '查看所有模型'],
   '模型开发者': ['上传新模型', '管理自己上传的模型版本', '编辑模型信息', '查看所有模型'],
   '普通用户': ['查看已发布的模型', '下载模型文件'],
+  '审核人/专家': ['审核模型', '查看所有模型'],
 };
 
-const PermissionManagementPage = () => {
+const roleOptions = [
+  '平台管理员',
+  '模型开发者',
+  '普通用户',
+  '审核人/专家',
+];
+
+const PermissionManagementPage = ({ currentUser = 'frank', currentRole = '平台管理员' }) => {
   const [users, setUsers] = useState(initialUsers);
 
+  // 只有frank且为平台管理员时可操作
+  const isAdmin = currentUser === 'frank' && currentRole === '平台管理员';
+
   const handleRoleChange = (userId, newRole) => {
-    setUsers(users.map(user => 
+    setUsers(users.map(user =>
       user.id === userId ? { ...user, role: newRole } : user
     ));
   };
@@ -60,14 +73,15 @@ const PermissionManagementPage = () => {
                 <td><FaUser style={{marginRight:6, color:'#888'}}/>{user.username}</td>
                 <td>{user.role}</td>
                 <td>
-                  <select 
+                  <select
                     className="pm-role-select"
-                    value={user.role} 
-                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                    value={user.role}
+                    onChange={e => handleRoleChange(user.id, e.target.value)}
+                    disabled={user.username === 'frank' || !isAdmin}
                   >
-                    <option value="平台管理员">平台管理员</option>
-                    <option value="模型开发者">模型开发者</option>
-                    <option value="普通用户">普通用户</option>
+                    {roleOptions.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
                   </select>
                 </td>
               </tr>
