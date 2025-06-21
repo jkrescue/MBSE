@@ -2,24 +2,11 @@ import React, { useState } from 'react';
 import { models as initialModels } from '../data';
 import './ReviewPanel.css';
 
-function ReviewPanel() {
-  const [models, setModels] = useState(initialModels);
+function ReviewPanel({ models, onReview }) {
+  const [rejectNote, setRejectNote] = useState({});
 
   // 只显示待评审的模型
   const pendingModels = models.filter(m => m.status === 'Pending Review');
-
-  // 评审操作
-  const handleReview = (id, action) => {
-    setModels(models.map(m => {
-      if (m.id === id) {
-        return {
-          ...m,
-          status: action === 'approve' ? 'Published' : 'Rejected',
-        };
-      }
-      return m;
-    }));
-  };
 
   return (
     <div className="review-panel">
@@ -49,8 +36,15 @@ function ReviewPanel() {
               <td><span className="status-badge status-pending">{model.status}</span></td>
               <td>{model.permission}</td>
               <td>
-                <button className="btn btn-approve" onClick={() => handleReview(model.id, 'approve')}>通过</button>
-                <button className="btn btn-reject" onClick={() => handleReview(model.id, 'reject')}>驳回</button>
+                <button className="btn btn-approve" onClick={() => onReview(model.id, 'approve')}>通过</button>
+                <input
+                  type="text"
+                  placeholder="驳回说明"
+                  style={{ width: '90px', marginRight: '4px' }}
+                  value={rejectNote[model.id] || ''}
+                  onChange={e => setRejectNote({ ...rejectNote, [model.id]: e.target.value })}
+                />
+                <button className="btn btn-reject" onClick={() => onReview(model.id, 'reject', rejectNote[model.id])}>驳回</button>
               </td>
             </tr>
           ))}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './PermissionManagementPage.css';
+import { FaUser, FaKey } from 'react-icons/fa';
 
 const initialUsers = [
   { id: 1, username: 'admin', role: '平台管理员' },
@@ -26,23 +27,24 @@ const PermissionManagementPage = () => {
 
   return (
     <div className="permission-page">
-      <h1>权限管理</h1>
-      <p>管理不同用户角色及其对应的操作权限。</p>
+      <h1 className="pm-title">权限管理</h1>
+      <p className="pm-desc">管理不同用户角色及其对应的操作权限。</p>
 
-      <div className="permissions-key">
-        <h2>角色权限说明</h2>
+      <div className="permissions-key pm-card">
+        <h2 className="pm-section-title"><FaKey style={{marginRight:8, color:'#3498db'}}/>角色权限说明</h2>
         <ul>
           {Object.entries(rolePermissions).map(([role, permissions]) => (
-            <li key={role}>
-              <strong>{role}:</strong> {permissions.join(', ')}
+            <li key={role} style={{marginBottom:10}}>
+              <strong style={{color:'#2c3e50'}}>{role}：</strong>
+              <span style={{color:'#555'}}>{permissions.join('，')}</span>
             </li>
           ))}
         </ul>
       </div>
 
-      <div className="user-roles">
-        <h2>用户角色分配</h2>
-        <table className="permission-table">
+      <div className="user-roles pm-card">
+        <h2 className="pm-section-title"><FaUser style={{marginRight:8, color:'#3498db'}}/>用户角色分配</h2>
+        <table className="permission-table pm-table">
           <thead>
             <tr>
               <th>用户ID</th>
@@ -55,10 +57,11 @@ const PermissionManagementPage = () => {
             {users.map(user => (
               <tr key={user.id}>
                 <td>{user.id}</td>
-                <td>{user.username}</td>
+                <td><FaUser style={{marginRight:6, color:'#888'}}/>{user.username}</td>
                 <td>{user.role}</td>
                 <td>
                   <select 
+                    className="pm-role-select"
                     value={user.role} 
                     onChange={(e) => handleRoleChange(user.id, e.target.value)}
                   >

@@ -25,13 +25,16 @@ function diffLines(a, b) {
 
   while (i > 0 || j > 0) {
     if (i > 0 && j > 0 && aLines[i - 1] === bLines[j - 1]) {
-      result.push({ type: 'equal', leftLine: i, rightLine: j, text: aLines[i - 1] });
+      result.push({ type: 'equal', leftLine: i, rightLine: j, left: aLines[i - 1], right: bLines[j - 1] });
+      i--; j--;
+    } else if (i > 0 && j > 0 && aLines[i - 1] !== bLines[j - 1]) {
+      result.push({ type: 'changed', leftLine: i, rightLine: j, left: aLines[i - 1], right: bLines[j - 1] });
       i--; j--;
     } else if (j > 0 && (i === 0 || lcs[i][j - 1] >= lcs[i - 1][j])) {
-      result.push({ type: 'added', leftLine: null, rightLine: j, text: bLines[j - 1] });
+      result.push({ type: 'added', leftLine: null, rightLine: j, left: '', right: bLines[j - 1] });
       j--; added++;
     } else if (i > 0 && (j === 0 || lcs[i][j - 1] < lcs[i - 1][j])) {
-      result.push({ type: 'removed', leftLine: i, rightLine: null, text: aLines[i - 1] });
+      result.push({ type: 'removed', leftLine: i, rightLine: null, left: aLines[i - 1], right: '' });
       i--; removed++;
     }
   }
@@ -54,6 +57,34 @@ function diffVersions(v1, v2) {
     ? `主要差异字段：${diffs.join('、')}。`
     : '两个版本内容完全一致。';
   return { diffs, desc };
+}
+
+// 简单XML结构解析（仅用于SysML Block/Package/Activity对比）
+function parseSysMLStructure(xml) {
+  if (!xml) return { blocks: [], packages: [], activities: [] };
+  let blocks = [], packages = [], activities = [];
+  try {
+    // 只做简单正则解析，适合演示
+    blocks = Array.from(xml.matchAll(/<Block name="([^"]+)"/g)).map(m => m[1]);
+    packages = Array.from(xml.matchAll(/<Package name="([^"]+)"/g)).map(m => m[1]);
+    activities = Array.from(xml.matchAll(/<Activity name="([^"]+)"/g)).map(m => m[1]);
+  } catch (e) {}
+  return { blocks, packages, activities };
+}
+
+function diffSysMLStruct(struct1, struct2) {
+  // 返回{type, name, elementType}
+  const diffList = [];
+  ['blocks','packages','activities'].forEach(type => {
+    const set1 = new Set(struct1[type]);
+    const set2 = new Set(struct2[type]);
+    // 新增
+    for (const name of set2) if (!set1.has(name)) diffList.push({type:'增加', name, elementType:type});
+    // 删除
+    for (const name of set1) if (!set2.has(name)) diffList.push({type:'删除', name, elementType:type});
+    // 保留的暂不标记为修改（如需更细粒度可扩展）
+  });
+  return diffList;
 }
 
 const VersionManagementPage = ({ model: initialModel, models: allModels }) => {
@@ -136,23 +167,81 @@ const VersionManagementPage = ({ model: initialModel, models: allModels }) => {
     const rightContent = file2 ? file2.content : '';
     const { diffs, conclusion } = diffLines(leftContent, rightContent);
 
+    // SysML XML结构对比
+    const isSysML = leftName.endsWith('.xml') || rightName.endsWith('.xml');
+    let struct1 = {}, struct2 = {}, structDiff = [];
+    if (isSysML) {
+      struct1 = parseSysMLStructure(leftContent);
+      struct2 = parseSysMLStructure(rightContent);
+      structDiff = diffSysMLStruct(struct1, struct2);
+    }
+
     return (
-      <div className="file-diff-block">
-        <div className="file-diff-header">
-          <span>{leftName}</span>
-          <span>{rightName}</span>
+      <div className="file-diff-block pro-diff">
+        {/* 主标题 */}
+        <div className="pro-diff-main-title">
+          {leftName} <span className="pro-diff-vs">vs</span> {rightName}
         </div>
-        <div className="file-diff-conclusion">{conclusion}</div>
-        <div className="file-diff-body">
-          {diffs.map((d, idx) => (
-            <div className={`file-diff-line file-diff-${d.type}`} key={idx}>
-              <div className="line-num left">{d.leftLine}</div>
-              <pre className="line-content left">{d.type !== 'added' ? d.text : ''}</pre>
-              <div className="line-num right">{d.rightLine}</div>
-              <pre className="line-content right">{d.type !== 'removed' ? d.text : ''}</pre>
+        {/* 内容区：两栏对比 */}
+        <div className="pro-diff-row pro-diff-main-content">
+          {/* 左栏 */}
+          <div className="pro-diff-main-col">
+            <div className="struct-title">结构树</div>
+            {isSysML ? (
+              <div className="struct-content">
+                <div><strong>Blocks:</strong> {struct1.blocks.length ? struct1.blocks.join(', ') : <span className="struct-empty">无</span>}</div>
+                <div><strong>Packages:</strong> {struct1.packages.length ? struct1.packages.join(', ') : <span className="struct-empty">无</span>}</div>
+                <div><strong>Activities:</strong> {struct1.activities.length ? struct1.activities.join(', ') : <span className="struct-empty">无</span>}</div>
+              </div>
+            ) : <div className="struct-empty">非SysML结构</div>}
+            {/* diff内容 */}
+            <div className="pro-diff-main-diff">
+              {diffs.map((d, idx) => (
+                <div key={idx} className={`pro-diff-line file-diff-${d.type}`}> 
+                  <div className="pro-diff-lineno">{d.leftLine}</div>
+                  <pre className="pro-diff-text">{d.left}</pre>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+          {/* 右栏 */}
+          <div className="pro-diff-main-col">
+            <div className="struct-title">结构树</div>
+            {isSysML ? (
+              <div className="struct-content">
+                <div><strong>Blocks:</strong> {struct2.blocks.length ? struct2.blocks.join(', ') : <span className="struct-empty">无</span>}</div>
+                <div><strong>Packages:</strong> {struct2.packages.length ? struct2.packages.join(', ') : <span className="struct-empty">无</span>}</div>
+                <div><strong>Activities:</strong> {struct2.activities.length ? struct2.activities.join(', ') : <span className="struct-empty">无</span>}</div>
+              </div>
+            ) : <div className="struct-empty">非SysML结构</div>}
+            {/* diff内容 */}
+            <div className="pro-diff-main-diff">
+              {diffs.map((d, idx) => (
+                <div key={idx} className={`pro-diff-line file-diff-${d.type}`}> 
+                  <div className="pro-diff-lineno">{d.rightLine}</div>
+                  <pre className="pro-diff-text">{d.right}</pre>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
+        {/* 结构变更结论 */}
+        {isSysML && structDiff.length > 0 && (
+          <div className="split-struct-conclusion">
+            <div className="struct-conclusion-title">结构变更结论：</div>
+            <ul>
+              {structDiff.map((d, i) => (
+                <li key={i}>
+                  <span className={`struct-diff-type ${d.type==='增加'?'add':'remove'}`}>{d.type}</span>
+                  <span className="struct-diff-elem">{d.elementType.replace('blocks','Block').replace('packages','Package').replace('activities','Activity')}</span>
+                  <span className="struct-diff-name">{d.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {/* diff结论 */}
+        <div className="pro-diff-conclusion">{conclusion}</div>
       </div>
     );
   }
@@ -238,32 +327,50 @@ const VersionManagementPage = ({ model: initialModel, models: allModels }) => {
           {showCompare && compareSelection.length === 2 ? (
             renderComparison()
           ) : (
-            <ul className="version-list">
-              {model.versions.map(version => (
-                <li key={version.version} className={`version-item ${compareSelection.includes(version) ? 'selected' : ''}`}>
-                  <div className="version-select">
-                    <input 
+            <div className="version-card-list">
+              {model.versions.map((version, idx) => (
+                <div
+                  key={version.version}
+                  className={`version-card${idx === 0 ? ' latest' : ''}${compareSelection.includes(version) ? ' selected' : ''}`}
+                  style={{
+                    border: idx === 0 ? '2px solid #007bff' : '1px solid #e1e4e8',
+                    background: idx === 0 ? '#f6faff' : '#fff',
+                    boxShadow: '0 2px 8px rgba(27,31,35,0.04)',
+                    borderRadius: '10px',
+                    marginBottom: '1.2rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    padding: '1.2rem 1.5rem',
+                    position: 'relative',
+                  }}
+                >
+                  <div className="version-select" style={{marginRight: '1.2rem'}}>
+                    <input
                       type="checkbox"
                       checked={compareSelection.includes(version)}
                       onChange={() => handleCompareSelect(version)}
                       title="选择以进行比较"
+                      style={{width: 18, height: 18}}
                     />
                   </div>
-                  <div className="version-info">
-                    <h3>版本 {version.version}</h3>
-                    <p><strong>创建者:</strong> {version.author || version.creator}</p>
-                    <p><strong>创建时间:</strong> {version.date}</p>
-                    <p><strong>描述:</strong> {version.description || version.changes}</p>
-                    {version.files && <p><strong>文件数:</strong> {version.files.length}</p>}
+                  <div className="version-info" style={{flex: 1}}>
+                    <div style={{display:'flex', alignItems:'center', gap:'0.7em'}}>
+                      <h3 style={{margin:0, fontWeight:700, color: idx === 0 ? '#007bff' : '#232b36'}}>版本 {version.version}</h3>
+                      {idx === 0 && <span style={{background:'#007bff',color:'#fff',borderRadius: '6px',padding:'2px 10px',fontSize:'0.95em'}}>最新</span>}
+                    </div>
+                    <div style={{marginTop:6}}><strong>创建者:</strong> {version.author || version.creator}</div>
+                    <div><strong>创建时间:</strong> {version.date}</div>
+                    <div><strong>描述:</strong> {version.description || version.changes}</div>
+                    {version.files && <div><strong>文件数:</strong> {version.files.length}</div>}
                   </div>
-                  <div className="version-actions">
+                  <div className="version-actions" style={{display:'flex', flexDirection:'column', gap:'0.5em', marginLeft:'1.5em'}}>
                     <button onClick={() => setDetailVersion(version)} className="btn btn-primary">查看详情</button>
                     <button onClick={() => handleDeleteVersion(version.version)} className="btn btn-danger">删除</button>
                     <button onClick={() => handleRollback(version)} className="btn btn-warning">回退到此版本</button>
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           )}
           {detailVersion && renderDetail(detailVersion)}
         </>

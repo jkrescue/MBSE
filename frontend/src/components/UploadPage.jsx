@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import './UploadPage.css';
 import { modelTypes, allTags as availableTags } from '../data';
 
-function UploadPage({ onAddModel, onBack }) {
+function UploadPage({ onAddModel, onBack, currentUser }) {
   const [name, setName] = useState('');
   const [type, setType] = useState(modelTypes[0]);
   const [description, setDescription] = useState('');
@@ -27,14 +27,14 @@ function UploadPage({ onAddModel, onBack }) {
       type,
       description,
       tags,
-      uploader: 'CurrentUser', // In a real app, this would be the logged-in user
+      uploader: currentUser,
       uploadDate: new Date().toISOString().split('T')[0],
       status: 'Draft',
       permission: 'Private',
       projectReferences: [],
       interface: { inputs: [], outputs: [] },
       versions: [
-        { version: '0.1', date: new Date().toISOString().split('T')[0], author: 'CurrentUser', status: 'Draft', changes: 'Initial draft.' }
+        { version: '0.1', date: new Date().toISOString().split('T')[0], author: currentUser, status: 'Draft', changes: 'Initial draft.' }
       ],
       structurePreview: 'default_preview.png',
       files: [] // File uploads would be handled here
