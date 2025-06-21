@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './ModelDetailPage.css';
-import modelicaImg from './modelica_model.svg';
+import modelicaImg from './modelica_model.png';
 import simulinkImg from './simulink_model.png';
 
 const TYPE_ENUM = ['real', 'integer', 'string', 'boolean'];
@@ -107,6 +107,26 @@ function ModelDetailPage({ model, onBack }) {
     });
   };
 
+  // 结构预览区块
+  const renderStructurePreview = () => {
+    let previewImg = model.structurePreview;
+    if (model.type === 'Modelica') {
+      previewImg = modelicaImg;
+    } else if (model.type === 'Simulink') {
+      previewImg = simulinkImg;
+    }
+    return (
+      <div className="structure-preview-block">
+        <h3>结构预览</h3>
+        {previewImg ? (
+          <img src={previewImg} alt="结构预览" style={{maxWidth:'100%',border:'1px solid #e1e4e8',borderRadius:8,background:'#fff'}} />
+        ) : (
+          <div style={{color:'#888'}}>暂无结构预览</div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="model-detail-page">
       <button onClick={onBack} className="back-button">← 返回模型总览</button>
@@ -129,14 +149,7 @@ function ModelDetailPage({ model, onBack }) {
         </div>
 
         <div className="detail-card">
-            <h3>结构预览</h3>
-            {model.type === 'Modelica' ? (
-              <img src={modelicaImg} alt="Modelica结构图" className="structure-image" />
-            ) : model.type === 'Simulink' ? (
-              <img src={simulinkImg} alt="Simulink结构图" className="structure-image" />
-            ) : (
-              <img src={`https://via.placeholder.com/400x200.png/f8f9fa/6c757d?text=${model.structurePreview}`} alt={model.structurePreview} className="structure-image" />
-            )}
+            {renderStructurePreview()}
         </div>
       </div>
 

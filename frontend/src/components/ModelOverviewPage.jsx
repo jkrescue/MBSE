@@ -45,6 +45,16 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
     }
   };
 
+  // 时间格式化函数
+  function formatDateTime(dateStr) {
+    if (!dateStr) return '';
+    // 支持原有日期或带时间的字符串
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const pad = n => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+
   return (
     <div className="model-overview-page">
       <div className="filters-container">
@@ -84,6 +94,7 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
               <th>类型</th>
               <th>描述</th>
               <th>上传者</th>
+              <th>上传时间</th>
               <th>状态</th>
               <th>权限</th>
               <th>版本</th>
@@ -97,6 +108,7 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
                 <td onClick={() => onSelectModel(model)}>{model.type}</td>
                 <td onClick={() => onSelectModel(model)}>{model.description}</td>
                 <td onClick={() => onSelectModel(model)}>{model.uploader}</td>
+                <td onClick={() => onSelectModel(model)}>{formatDateTime(model.uploadDate)}</td>
                 <td>
                   <span className={`status-badge ${getStatusClass(model.status)}`}>
                     {model.status}
@@ -128,6 +140,7 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
               <th>类型</th>
               <th>描述</th>
               <th>上传者</th>
+              <th>上传时间</th>
               <th>状态</th>
               <th>权限</th>
               <th>版本</th>
@@ -142,6 +155,7 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
                 <td onClick={() => onSelectModel(model)}>{model.type}</td>
                 <td onClick={() => onSelectModel(model)}>{model.description}</td>
                 <td onClick={() => onSelectModel(model)}>{model.uploader}</td>
+                <td onClick={() => onSelectModel(model)}>{formatDateTime(model.uploadDate)}</td>
                 <td>
                   <span className={`status-badge ${getStatusClass(model.status)}`}>
                     {model.status}
