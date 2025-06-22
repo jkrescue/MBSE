@@ -104,20 +104,29 @@ const ROLE_OPTIONS = [
   { value: 'user', label: '普通用户' },
 ];
 
-const VersionManagementPage = ({ model: initialModel, models: allModels, currentUser, currentRole }) => {
+const VersionManagementPage = ({ model: initialModel, models: allModels, currentUser, currentRole, onUpdateModels }) => {
   const [model, setModel] = useState(initialModel);
-  const [allModelsData, setAllModelsData] = useState(allModels);
   const [compareSelection, setCompareSelection] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
   const [detailVersion, setDetailVersion] = useState(null);
+  const [taggingVersion, setTaggingVersion] = useState(null);
+  const [newTag, setNewTag] = useState('');
+  const [editingDeps, setEditingDeps] = useState(null); // { version, deps: [] }
+  const [depModel, setDepModel] = useState('');
+  const [depVersion, setDepVersion] = useState('');
 
   useEffect(() => {
     setModel(initialModel);
   }, [initialModel]);
 
+  // Utility function to get current timestamp
+  const getCurrentTimestamp = () => {
+    return new Date().toISOString().replace('T', ' ').substring(0, 19);
+  };
+
   const handleModelChange = (e) => {
     const selectedId = e.target.value;
-    const newSelectedModel = allModelsData.find(m => m.id === selectedId);
+    const newSelectedModel = allModels.find(m => m.id === selectedId);
     setModel(newSelectedModel);
     setCompareSelection([]);
     setShowCompare(false);
@@ -127,12 +136,72 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
   const handleDeleteVersion = (versionNumber) => {
     if (window.confirm(`确定要删除版本 ${versionNumber} 吗？此操作不可恢复。`)) {
       const updatedVersions = model.versions.filter(v => v.version !== versionNumber);
-      const updatedModel = { ...model, versions: updatedVersions };
+      
+      const newLog = { 
+        date: getCurrentTimestamp(), 
+        user: currentUser, 
+        action: '删除版本', 
+        details: `删除了版本 v${versionNumber}` 
+      };
+      const updatedLog = [newLog, ...(model.changeLog || [])];
+
+      const updatedModel = { ...model, versions: updatedVersions, changeLog: updatedLog };
+      
       setModel(updatedModel);
-      const updatedAllModels = allModelsData.map(m => m.id === model.id ? updatedModel : m);
-      setAllModelsData(updatedAllModels);
+      
+      const updatedAllModels = allModels.map(m => m.id === model.id ? updatedModel : m);
+      onUpdateModels(updatedAllModels);
     }
   };
+
+  const handleSetTag = (version) => {
+    const updatedVersions = model.versions.map(v => 
+      v.version === version.version ? { ...v, releaseTag: newTag } : v
+    );
+
+    const newLog = {
+      date: getCurrentTimestamp(),
+      user: currentUser,
+      action: '设置标签',
+      details: `为版本 v${version.version} 设置了标签: "${newTag}"`
+    };
+    const updatedLog = [newLog, ...(model.changeLog || [])];
+
+    const updatedModel = { ...model, versions: updatedVersions, changeLog: updatedLog };
+    setModel(updatedModel);
+
+    const updatedAllModels = allModels.map(m => m.id === model.id ? updatedModel : m);
+    onUpdateModels(updatedAllModels);
+
+    setTaggingVersion(null);
+    setNewTag('');
+  };
+
+  const handleUpdateDependencies = () => {
+    const { version, deps } = editingDeps;
+
+    const updatedVersions = model.versions.map(v => 
+      v.version === version.version ? { ...v, dependencies: deps } : v
+    );
+
+    const newLog = {
+      date: getCurrentTimestamp(),
+      user: currentUser,
+      action: '更新依赖',
+      details: `更新了版本 v${version.version} 的依赖关系`
+    };
+    const updatedLog = [newLog, ...(model.changeLog || [])];
+    
+    const updatedModel = { ...model, versions: updatedVersions, changeLog: updatedLog };
+    setModel(updatedModel);
+
+    const updatedAllModels = allModels.map(m => m.id === model.id ? updatedModel : m);
+    onUpdateModels(updatedAllModels);
+
+    setEditingDeps(null);
+    setDepModel('');
+    setDepVersion('');
+  }
 
   const handleCompareSelect = (version) => {
     setCompareSelection(prev => {
@@ -167,12 +236,27 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
       changes: `回退自版本${version.version}`
     };
     const updatedVersions = [newVersion, ...model.versions];
-    const updatedModel = { ...model, versions: updatedVersions };
+
+    const newLog = {
+      date: getCurrentTimestamp(),
+      user: currentUser,
+      action: '回退版本',
+      details: `从 v${version.version} 回退创建了新版本 v${newVersionNum}`
+    };
+    const updatedLog = [newLog, ...(model.changeLog || [])];
+
+    const updatedModel = { ...model, versions: updatedVersions, changeLog: updatedLog };
+
     setModel(updatedModel);
-    const updatedAllModels = allModelsData.map(m => m.id === model.id ? updatedModel : m);
-    setAllModelsData(updatedAllModels);
+    
+    const updatedAllModels = allModels.map(m => m.id === model.id ? updatedModel : m);
+    onUpdateModels(updatedAllModels);
+
     alert(`已回退到版本${version.version}，新版本号为${newVersionNum}`);
   };
+
+  // 判断当前用户是否有编辑权限
+  const canEdit = currentRole === 'Engineer' || currentRole === 'uploader';
 
   // 文件内容对比视图
   function renderFileDiff(file1, file2) {
@@ -318,6 +402,155 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
     </div>
   );
 
+  const renderTagModal = () => {
+    if (!taggingVersion) return null;
+    return (
+      <div className="version-detail-modal">
+        <div className="version-detail-content" style={{maxWidth: 400}}>
+          <h2>设置版本标签</h2>
+          <p>为版本 <strong>{taggingVersion.version}</strong> 设置一个发布标签 (例如: Stable, Beta, Nightly)。</p>
+          <input
+            type="text"
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            placeholder="输入标签..."
+            className="tag-input"
+          />
+          <div className="tag-modal-actions">
+            <button onClick={() => handleSetTag(taggingVersion)} className="btn btn-primary">保存</button>
+            <button onClick={() => setTaggingVersion(null)} className="btn btn-secondary">取消</button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderDependencies = (dependencies) => {
+    if (!dependencies || dependencies.length === 0) {
+      return <div className="no-deps">无依赖关系</div>;
+    }
+  
+    return (
+      <div className="deps-list">
+        {dependencies.map((dep, index) => {
+          const depModelInfo = allModels.find(m => m.id === dep.modelId);
+          return (
+            <div key={index} className="dep-item">
+              <span className="dep-model-name">{depModelInfo ? depModelInfo.name : dep.modelId}</span>
+              <span className="dep-version">v{dep.version}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderDependenciesModal = () => {
+    if (!editingDeps) return null;
+  
+    const availableModels = allModels.filter(m => m.id !== model.id);
+    const selectedDepModelDetails = allModels.find(m => m.id === depModel);
+  
+    return (
+      <div className="version-detail-modal">
+        <div className="version-detail-content" style={{maxWidth: 600}}>
+          <h2>编辑版本 {editingDeps.version.version} 的依赖</h2>
+          
+          <div className="current-deps-list">
+            <h4>当前依赖:</h4>
+            {editingDeps.deps.length === 0 ? <p>无</p> : (
+              <ul>
+                {editingDeps.deps.map((d, i) => {
+                  const name = allModels.find(m => m.id === d.modelId)?.name || d.modelId;
+                  return (
+                    <li key={i}>
+                      {name} v{d.version}
+                      <button onClick={() => {
+                        const newDeps = editingDeps.deps.filter((_, idx) => idx !== i);
+                        setEditingDeps({...editingDeps, deps: newDeps});
+                      }} className="btn-remove-dep">移除</button>
+                    </li>
+                  )
+                })}
+              </ul>
+            )}
+          </div>
+
+          <div className="add-dep-form">
+            <h4>新增依赖:</h4>
+            <select value={depModel} onChange={e => { setDepModel(e.target.value); setDepVersion(''); }}>
+              <option value="">选择模型...</option>
+              {availableModels.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+            {selectedDepModelDetails && (
+              <select value={depVersion} onChange={e => setDepVersion(e.target.value)}>
+                <option value="">选择版本...</option>
+                {selectedDepModelDetails.versions.map(v => <option key={v.version} value={v.version}>{v.version}</option>)}
+              </select>
+            )}
+            <button
+              onClick={() => {
+                if (!depModel || !depVersion) return;
+                const newDep = { modelId: depModel, version: depVersion };
+                // 防止重复添加
+                if (editingDeps.deps.some(d => d.modelId === newDep.modelId && d.version === newDep.version)) return;
+                setEditingDeps({...editingDeps, deps: [...editingDeps.deps, newDep]});
+                setDepModel('');
+                setDepVersion('');
+              }}
+              className="btn btn-primary"
+              disabled={!depModel || !depVersion}
+            >
+              添加
+            </button>
+          </div>
+
+          <div className="tag-modal-actions">
+            <button onClick={handleUpdateDependencies} className="btn btn-primary">保存</button>
+            <button onClick={() => setEditingDeps(null)} className="btn btn-secondary">取消</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const renderChangeLog = (log) => {
+    if (!log || log.length === 0) {
+      return (
+        <div className="change-log-container">
+          <h3>版本操作日志</h3>
+          <p>暂无操作记录。</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="change-log-container">
+        <h3>版本操作日志</h3>
+        <table className="change-log-table">
+          <thead>
+            <tr>
+              <th>操作时间</th>
+              <th>操作人</th>
+              <th>操作类型</th>
+              <th>详情</th>
+            </tr>
+          </thead>
+          <tbody>
+            {log.map((entry, index) => (
+              <tr key={index}>
+                <td>{entry.date}</td>
+                <td>{entry.user}</td>
+                <td>{entry.action}</td>
+                <td>{entry.details}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   // 只显示当前用户和角色
   const renderUserInfo = () => (
     <div style={{marginBottom: '1.2em', display:'flex', alignItems:'center', gap:'1em'}}>
@@ -337,7 +570,7 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
           <label htmlFor="model-select">选择一个模型以管理其版本:</label>
           <select id="model-select" onChange={handleModelChange} value={model?.id || ''}>
             <option value="" disabled>请选择...</option>
-            {allModelsData.map(m => (
+            {allModels.map(m => (
               <option key={m.id} value={m.id}>{m.name}</option>
             ))}
           </select>
@@ -381,25 +614,37 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
                     />
                   </div>
                   <div className="version-info" style={{flex: 1}}>
-                    <div style={{display:'flex', alignItems:'center', gap:'0.7em'}}>
+                    <div style={{display:'flex', alignItems:'center', gap:'0.7em', flexWrap:'wrap'}}>
                       <h3 style={{margin:0, fontWeight:700, color: idx === 0 ? '#007bff' : '#232b36'}}>版本 {version.version}</h3>
-                      {idx === 0 && <span style={{background:'#007bff',color:'#fff',borderRadius: '6px',padding:'2px 10px',fontSize:'0.95em'}}>最新</span>}
+                      {idx === 0 && <span className="badge latest-badge">最新</span>}
+                      {version.releaseTag && <span className="badge release-badge">{version.releaseTag}</span>}
                     </div>
                     <div style={{marginTop:6}}><strong>创建者:</strong> {version.author || version.creator}</div>
                     <div><strong>创建时间:</strong> {version.date}</div>
                     <div><strong>描述:</strong> {version.description || version.changes}</div>
+                    <div className="version-dependencies">
+                      <strong>依赖关系:</strong>
+                      {renderDependencies(version.dependencies)}
+                    </div>
                     {version.files && <div><strong>文件数:</strong> {version.files.length}</div>}
                   </div>
                   <div className="version-actions" style={{display:'flex', flexDirection:'column', gap:'0.5em', marginLeft:'1.5em'}}>
                     <button onClick={() => setDetailVersion(version)} className="btn btn-primary">查看详情</button>
-                    <button onClick={() => handleDeleteVersion(version.version)} className="btn btn-danger">删除</button>
-                    <button onClick={() => handleRollback(version)} className="btn btn-warning">回退到此版本</button>
+                    {canEdit && <button onClick={() => setTaggingVersion(version)} className="btn btn-info">设置标签</button>}
+                    {canEdit && <button onClick={() => setEditingDeps({ version, deps: [...(version.dependencies || [])]})} className="btn btn-secondary">编辑依赖</button>}
+                    {canEdit && <button onClick={() => handleDeleteVersion(version.version)} className="btn btn-danger">删除</button>}
+                    {canEdit && <button onClick={() => handleRollback(version)} className="btn btn-warning">回退到此版本</button>}
                   </div>
                 </div>
               ))}
             </div>
           )}
           {detailVersion && renderDetail(detailVersion)}
+          {renderTagModal()}
+          {renderDependenciesModal()}
+          
+          {/* Display change log here */}
+          {renderChangeLog(model.changeLog)}
         </>
       ) : (
         <p>请从模型总览页选择一个模型，或在此处选择一个模型以开始管理版本。</p>

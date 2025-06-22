@@ -128,6 +128,14 @@
   background-color: #c0392b;
 }
 
+.version-actions .btn-info {
+  background-color: #17a2b8;
+}
+
+.version-actions .btn-info:hover {
+  background-color: #117a8b;
+}
+
 .compare-actions {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -927,4 +935,196 @@
   text-align: center;
   border: 1px solid #e1e4e8;
   font-size: 1.08em;
+}
+
+/* Change Log Styles */
+.change-log-container {
+  margin-top: 3rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  padding: 1.5rem 2rem;
+  border: 1px solid #e1e4e8;
+  box-shadow: 0 2px 8px rgba(27,31,35,0.04);
+}
+
+.change-log-container h3 {
+  color: #2c3e50;
+  border-bottom: 2px solid #1abc9c;
+  padding-bottom: 10px;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 1.4rem;
+}
+
+.change-log-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.change-log-table th,
+.change-log-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #dfe2e5;
+}
+
+.change-log-table th {
+  background-color: #f6f8fa;
+  font-weight: 600;
+  color: #24292e;
+}
+
+.change-log-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.change-log-table tbody tr:hover {
+  background-color: #f6f8fa;
+}
+
+/* Badge Styles */
+.badge {
+  border-radius: 8px;
+  padding: 3px 12px;
+  font-size: 0.9em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.latest-badge {
+  background: #007bff;
+  color: #fff;
+}
+
+.release-badge {
+  background: #28a745;
+  color: #fff;
+}
+
+/* Tag Modal Styles */
+.tag-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 1rem;
+}
+
+.tag-modal-actions {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+
+.tag-modal-actions .btn {
+  margin-left: 0.5rem;
+}
+
+/* Dependencies Styles */
+.version-dependencies {
+  margin-top: 12px;
+  font-size: 0.95em;
+}
+
+.version-dependencies strong {
+  margin-right: 8px;
+  color: #333;
+}
+
+.no-deps {
+  color: #888;
+  font-style: italic;
+  display: inline;
+}
+
+.deps-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.dep-item {
+  background-color: #e9ecef;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid #ced4da;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.dep-model-name {
+  font-weight: 500;
+  color: #495057;
+}
+
+.dep-version {
+  font-size: 0.9em;
+  background-color: #6c757d;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+/* Dependencies Modal Styles */
+.current-deps-list ul {
+  list-style-type: none;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #e1e4e8;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.current-deps-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.current-deps-list li:nth-child(even) {
+  background-color: #f8f9fa;
+}
+
+.btn-remove-dep {
+  background: none;
+  border: 1px solid #e74c3c;
+  color: #e74c3c;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-remove-dep:hover {
+  background: #e74c3c;
+  color: white;
+}
+
+.add-dep-form {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e1e4e8;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-dep-form select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  flex-grow: 1;
+}
+
+.add-dep-form .btn {
+  flex-shrink: 0;
 }

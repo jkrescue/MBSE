@@ -9,6 +9,8 @@ export const models = [
     uploadDate: '2023-10-26',
     status: 'Published',
     permission: 'Public',
+    rating: 5,
+    isRecommended: true,
     projectReferences: ['Project_Alpha', 'Project_Beta'],
     interface: {
       inputs: [
@@ -20,24 +22,37 @@ export const models = [
       ],
     },
     versions: [
-      { version: '2.1', date: '2023-10-27', author: 'Alice', status: 'Published', changes: 'Minor bug fixes.',
+      { version: '2.1', date: '2023-10-27', author: 'Alice', status: 'Published', changes: 'Minor bug fixes.', releaseTag: 'Stable Release',
+        dependencies: [
+          { modelId: 'M002', version: '1.0' },
+          { modelId: 'M004', version: '1.0' }
+        ],
         files: [
           { name: 'EngineControl_V2.1.slx', type: 'Simulink', content: '// Simulink binary content (省略)' },
           { name: 'Interface_Spec.pdf', type: 'PDF', content: 'PDF文档内容（省略）' },
           { name: 'Test_Vectors.csv', type: 'CSV', content: 'input,output\n1000,0.5\n2000,0.7' }
         ]
       },
-      { version: '2.0', date: '2023-10-26', author: 'Alice', status: 'Published', changes: 'Initial release of version 2.',
+      { version: '2.0', date: '2023-10-26', author: 'Alice', status: 'Published', changes: 'Initial release of version 2.', releaseTag: 'Feature Complete',
+        dependencies: [
+          { modelId: 'M002', version: '1.0' }
+        ],
         files: [
           { name: 'EngineControl_V2.0.slx', type: 'Simulink', content: '// Simulink binary content (省略)' },
           { name: 'Interface_Spec.pdf', type: 'PDF', content: 'PDF文档内容（省略）' }
         ]
       },
-      { version: '1.5', date: '2023-09-15', author: 'Alice', status: 'Archived', changes: 'Deprecated in favor of V2.',
+      { version: '1.5', date: '2023-09-15', author: 'Alice', status: 'Archived', changes: 'Deprecated in favor of V2.', releaseTag: null,
+        dependencies: [],
         files: [
           { name: 'EngineControl_V1.5.slx', type: 'Simulink', content: '// Simulink binary content (省略)' }
         ]
       },
+    ],
+    changeLog: [
+      { date: '2023-10-27 11:00', user: 'Alice', action: '创建版本', details: '创建了版本 v2.1' },
+      { date: '2023-10-26 09:30', user: 'Alice', action: '创建版本', details: '创建了版本 v2.0' },
+      { date: '2023-09-15 14:00', user: 'Alice', action: '创建版本', details: '创建了版本 v1.5' },
     ],
     structurePreview: 'Simulink_Topology_Diagram.png', // Placeholder for a graphical preview
     files: [
@@ -56,6 +71,8 @@ export const models = [
     uploadDate: '2023-11-05',
     status: 'Pending Review',
     permission: 'Project-Authorized',
+    rating: 4,
+    isRecommended: false,
     projectReferences: ['Project_Gamma'],
     interface: {
       inputs: [
@@ -67,12 +84,16 @@ export const models = [
       ],
     },
     versions: [
-      { version: '1.0', date: '2023-11-05', author: 'Bob', status: 'Pending Review', changes: 'First version for review.',
+      { version: '1.0', date: '2023-11-05', author: 'Bob', status: 'Pending Review', changes: 'First version for review.', releaseTag: 'Beta Test',
+        dependencies: [],
         files: [
           { name: 'BatteryThermalModel_V1.0.mo', type: 'Modelica', content: 'model BatteryThermalModel\n  parameter Real C = 1000;\n  Real T(start=25);\nequation\n  der(T) = (ambient_temp - T)/C + current_draw*0.1;\nend BatteryThermalModel;' },
           { name: 'Documentation.docx', type: 'DOCX', content: '文档内容（省略）' }
         ]
       },
+    ],
+    changeLog: [
+      { date: '2023-11-05 15:00', user: 'Bob', action: '创建版本', details: '创建了版本 v1.0' },
     ],
     structurePreview: 'Modelica_Structure.png',
      files: [
@@ -90,6 +111,8 @@ export const models = [
     uploadDate: '2023-11-10',
     status: 'Published',
     permission: 'Project-Authorized',
+    rating: 4,
+    isRecommended: false,
     projectReferences: ['Project_ADAS'],
      interface: {
       inputs: [],
@@ -102,6 +125,8 @@ export const models = [
         author: 'Charlie', 
         status: 'Published', 
         changes: '删除了Block A，增加了Activity BAction，以反映新的需求。',
+        releaseTag: 'Internal Build',
+        dependencies: [],
         files: [
           { 
             name: 'SystemArchitecture_V0.2.xml', 
@@ -134,6 +159,8 @@ export const models = [
         author: 'Charlie', 
         status: 'Archived', 
         changes: '初始草稿，包含了核心的控制器和传感器模块，以及一个测试块A。',
+        releaseTag: null,
+        dependencies: [],
         files: [
           { 
             name: 'SystemArchitecture_V0.1.xml', 
@@ -162,6 +189,10 @@ export const models = [
         ]
       },
     ],
+    changeLog: [
+        { date: '2023-11-15 18:00', user: 'Charlie', action: '创建版本', details: '创建了版本 v0.2' },
+        { date: '2023-11-10 12:00', user: 'Charlie', action: '创建版本', details: '创建了版本 v0.1' },
+    ],
     structurePreview: 'SysML_Block_Diagram.svg',
     files: []
   },
@@ -175,6 +206,8 @@ export const models = [
     uploadDate: '2023-11-12',
     status: 'Published',
     permission: 'Public',
+    rating: 3,
+    isRecommended: false,
     projectReferences: ['Project_Alpha', 'Project_Delta'],
     interface: {
       inputs: [
@@ -187,11 +220,15 @@ export const models = [
       ],
     },
     versions: [
-      { version: '1.0', date: '2023-11-12', author: 'Alice', status: 'Published', changes: 'Initial release.',
+      { version: '1.0', date: '2023-11-12', author: 'Alice', status: 'Published', changes: 'Initial release.', releaseTag: null,
+        dependencies: [],
         files: [
           { name: 'Suspension_Dynamics_V1.slx', type: 'Simulink', content: '// Simulink binary content (省略)' }
         ]
       },
+    ],
+    changeLog: [
+        { date: '2023-11-12 09:00', user: 'Alice', action: '创建版本', details: '创建了版本 v1.0' },
     ],
     structurePreview: 'Simulink_Suspension.png',
     files: [
@@ -209,10 +246,15 @@ export const models = [
     uploadDate: '2023-11-21',
     status: 'Pending Review',
     permission: 'Private',
+    rating: 0,
+    isRecommended: false,
     projectReferences: [],
     interface: { inputs: [], outputs: [] },
     versions: [
-      { version: '0.2', date: '2023-11-21', author: 'Alice', status: 'Pending Review', changes: '待审核。', files: [] }
+      { version: '0.2', date: '2023-11-21', author: 'Alice', status: 'Pending Review', changes: '待审核。', files: [], releaseTag: 'Nightly', dependencies: [] }
+    ],
+    changeLog: [
+      { date: '2023-11-21 10:00', user: 'Alice', action: '创建版本', details: '创建了版本 v0.2' },
     ],
     structurePreview: '',
     files: []
@@ -230,7 +272,10 @@ export const models = [
     projectReferences: [],
     interface: { inputs: [], outputs: [] },
     versions: [
-      { version: '1.0', date: '2023-11-22', author: 'Alice', status: 'Published', changes: '正式发布。', files: [] }
+      { version: '1.0', date: '2023-11-22', author: 'Alice', status: 'Published', changes: '正式发布。', files: [], releaseTag: null, dependencies: [] }
+    ],
+    changeLog: [
+      { date: '2023-11-22 11:00', user: 'Alice', action: '创建版本', details: '创建了版本 v1.0' },
     ],
     structurePreview: '',
     files: []
@@ -249,7 +294,10 @@ export const models = [
     projectReferences: [],
     interface: { inputs: [], outputs: [] },
     versions: [
-      { version: '0.1', date: '2023-11-23', author: 'Bob', status: 'Draft', changes: '初始草稿。', files: [] }
+      { version: '0.1', date: '2023-11-23', author: 'Bob', status: 'Draft', changes: '初始草稿。', files: [], releaseTag: null, dependencies: [] }
+    ],
+    changeLog: [
+      { date: '2023-11-23 14:00', user: 'Bob', action: '创建版本', details: '创建了版本 v0.1' },
     ],
     structurePreview: '',
     files: []
@@ -267,7 +315,10 @@ export const models = [
     projectReferences: [],
     interface: { inputs: [], outputs: [] },
     versions: [
-      { version: '1.0', date: '2023-11-24', author: 'Bob', status: 'Archived', changes: '归档。', files: [] }
+      { version: '1.0', date: '2023-11-24', author: 'Bob', status: 'Archived', changes: '归档。', files: [], releaseTag: null, dependencies: [] }
+    ],
+    changeLog: [
+      { date: '2023-11-24 16:00', user: 'Bob', action: '创建版本', details: '创建了版本 v1.0' },
     ],
     structurePreview: '',
     files: []
@@ -286,7 +337,10 @@ export const models = [
     projectReferences: [],
     interface: { inputs: [], outputs: [] },
     versions: [
-      { version: '0.2', date: '2023-11-25', author: 'Charlie', status: 'Pending Review', changes: '待审核。', files: [] }
+      { version: '0.2', date: '2023-11-25', author: 'Charlie', status: 'Pending Review', changes: '待审核。', files: [], releaseTag: 'Nightly', dependencies: [] }
+    ],
+    changeLog: [
+      { date: '2023-11-25 09:30', user: 'Charlie', action: '创建版本', details: '创建了版本 v0.2' },
     ],
     structurePreview: '',
     files: []
@@ -304,7 +358,10 @@ export const models = [
     projectReferences: [],
     interface: { inputs: [], outputs: [] },
     versions: [
-      { version: '1.0', date: '2023-11-26', author: 'Charlie', status: 'Archived', changes: '归档。', files: [] }
+      { version: '1.0', date: '2023-11-26', author: 'Charlie', status: 'Archived', changes: '归档。', files: [], releaseTag: null, dependencies: [] }
+    ],
+    changeLog: [
+      { date: '2023-11-26 17:00', user: 'Charlie', action: '创建版本', details: '创建了版本 v1.0' },
     ],
     structurePreview: '',
     files: []

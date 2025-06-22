@@ -84,6 +84,10 @@ function App() {
     setCurrentPage('overview');
   };
 
+  const handleUpdateModels = (updatedModels) => {
+    setModels(updatedModels);
+  };
+
   const handleReview = (id, action, note) => {
     setModels(models => models.map(m => {
       if (m.id === id) {
@@ -108,7 +112,7 @@ function App() {
       case 'permissions':
         return <PermissionManagementPage />;
       case 'versions':
-        return <VersionManagementPage model={selectedModelForVersions} models={models} currentUser={currentUser} currentRole={userList[currentUser]?.role} />;
+        return <VersionManagementPage model={selectedModelForVersions} models={models} currentUser={currentUser} currentRole={userList[currentUser]?.role} onUpdateModels={handleUpdateModels} />;
       case 'review':
         return <ReviewPanel models={models} onReview={handleReview} />;
       case 'references':
