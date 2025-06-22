@@ -115,7 +115,9 @@ export const models = [
             { stage: 'StaticCheck', status: 'Passed', user: 'AutoBot', date: '2023-11-05 16:00', comment: 'MAAB compliance: 85%. Coverage: 80%.', metrics: { compliance: 85, coverage: 80 } }
           ]
         },
-        dependencies: [],
+        dependencies: [
+          { modelId: 'M004', version: '0.5' }
+        ],
         files: [
           { name: 'BatteryThermalModel_V1.0.mo', type: 'Modelica', content: 'model BatteryThermalModel\n  parameter Real C = 1000;\n  Real T(start=25);\nequation\n  der(T) = (ambient_temp - T)/C + current_draw*0.1;\nend BatteryThermalModel;' },
           { name: 'Documentation.docx', type: 'DOCX', content: '文档内容（省略）' }

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import ReactFlow, { MiniMap, Controls, Background } from 'reactflow';
+import ReactFlow, { MiniMap, Controls, Background, ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 
 const nodeStyle = {
@@ -78,15 +78,17 @@ const ModelLineageGraph = ({ model, allModels }) => {
 
     return (
         <div style={{ height: '500px', width: '100%', border: '1px solid #eee', borderRadius: '8px' }}>
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                fitView
-            >
-                <MiniMap />
-                <Controls />
-                <Background />
-            </ReactFlow>
+            <ReactFlowProvider>
+                <ReactFlow
+                    nodes={nodes}
+                    edges={edges}
+                    fitView
+                >
+                    <MiniMap />
+                    <Controls />
+                    <Background />
+                </ReactFlow>
+            </ReactFlowProvider>
         </div>
     );
 };
