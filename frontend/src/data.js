@@ -128,9 +128,14 @@ export const models = [
       { date: '2023-11-05 15:00', user: 'Bob', action: '创建版本', details: '创建了版本 v1.0' },
     ],
     structurePreview: 'Modelica_Structure.png',
-     files: [
+    files: [
         { name: 'BatteryThermalModel_V1.0.mo', size: '800 KB' },
         { name: 'Documentation.docx', size: '2.1 MB' },
+    ],
+    reviewTasks: [
+      { reviewer: 'Alice', status: 'Pending', note: '' },
+      { reviewer: 'Charlie', status: 'Approved', note: '结构合理，建议补充测试用例。 —Charlie' },
+      { reviewer: 'David', status: 'Rejected', note: '接口文档不全。 —David' }
     ]
   },
   {
@@ -420,7 +425,11 @@ export const models = [
     changeLog: [{ date: '2024-02-20', user: 'Alice', action: '创建版本', details: 'v0.9' }],
     tags: ['Power', 'Control', 'ECU'],
     structurePreview: 'Simulink_Topology_Diagram.png',
-    files: [{ name: 'PMU_V0.9.slx', size: '980 KB' }]
+    files: [{ name: 'PMU_V0.9.slx', size: '980 KB' }],
+    reviewTasks: [
+      { reviewer: 'Alice', status: 'Approved', note: '通过。 —Alice' },
+      { reviewer: 'Charlie', status: 'Pending', note: '' }
+    ]
   },
   {
     id: 'M008',
@@ -429,7 +438,7 @@ export const models = [
     description: 'Bob的私有SysML模型，用于座舱气候控制系统架构。',
     tags: ['SysML', 'HVAC', 'Private'],
     uploader: 'Bob',
-    uploadDate: '2024-03-01',
+    uploadDate: '2024-03-01 08:00:00',
     status: 'Draft',
     permission: 'Private',
     rating: 0,
@@ -441,7 +450,11 @@ export const models = [
     ],
     changeLog: [],
     structurePreview: 'SysML_Block_Diagram.svg',
-    files: [{ name: 'Climate_Control.xml', size: '15 KB' }]
+    files: [{ name: 'Climate_Control.xml', size: '15 KB' }],
+    reviewTasks: [
+      { reviewer: 'Alice', status: 'Pending', note: '' },
+      { reviewer: 'Charlie', status: 'Pending', note: '' }
+    ]
   },
   {
     id: 'M009',
@@ -514,4 +527,12 @@ export const allTags = [
   'Architecture',
   'System',
   'Vehicle Dynamics',
-]; 
+];
+
+const getInitialModels = () => {
+  try {
+    const stored = localStorage.getItem('models');
+    if (stored) return JSON.parse(stored);
+  } catch (e) { console.error('读取本地模型数据失败', e); }
+  return models; // 这里的 models 就是本文件导出的models数组
+}; 

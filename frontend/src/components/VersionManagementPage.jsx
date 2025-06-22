@@ -545,6 +545,15 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
 
       <div className="vmp-main-content">
         {renderUserInfo()}
+        {/* 模型切换下拉框 */}
+        <div className="model-selector-container" style={{marginBottom:'1.2em',display:'flex',alignItems:'center',gap:'1em'}}>
+          <label htmlFor="model-select" style={{fontWeight:600}}>选择模型：</label>
+          <select id="model-select" value={model.id} onChange={handleModelChange} style={{padding:'6px 12px',fontSize:'1em',borderRadius:4}}>
+            {allModels.map(m => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+        </div>
         {model ? (
           <>
             <h2>{model.name} - 版本历史</h2>

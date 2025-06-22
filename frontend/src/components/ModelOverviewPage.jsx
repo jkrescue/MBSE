@@ -7,7 +7,7 @@ import AdvancedSearchModal from './AdvancedSearchModal';
 import DependencyModal from './DependencyModal';
 import ReviewConfigModal from './ReviewConfigModal';
 
-function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions, currentUser }) {
+function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions, currentUser, onAddReviewTaskNotification }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('All Types');
   const [selectedStatus, setSelectedStatus] = useState('All Statuses');
@@ -354,14 +354,14 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
                  <button
                    onClick={e => {
                      e.stopPropagation();
-                     if (model.status === 'Draft' || model.status === 'Rejected') {
+                     if (model.status === 'Draft' || model.status === 'Rejected' || model.status === 'Pending Review') {
                        setPendingPublishModel(model);
                        setShowReviewConfigModal(true);
                      }
                    }}
                    className="action-button"
-                   style={{ backgroundColor: (model.status === 'Draft' || model.status === 'Rejected') ? '#f39c12' : '#ccc', cursor: (model.status === 'Draft' || model.status === 'Rejected') ? 'pointer' : 'not-allowed' }}
-                   disabled={!(model.status === 'Draft' || model.status === 'Rejected')}
+                   style={{ backgroundColor: (model.status === 'Draft' || model.status === 'Rejected' || model.status === 'Pending Review') ? '#f39c12' : '#ccc', cursor: (model.status === 'Draft' || model.status === 'Rejected' || model.status === 'Pending Review') ? 'pointer' : 'not-allowed' }}
+                   disabled={!(model.status === 'Draft' || model.status === 'Rejected' || model.status === 'Pending Review')}
                  >
                    发布
                  </button>
@@ -483,7 +483,20 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
         visible={showReviewConfigModal}
         onClose={() => setShowReviewConfigModal(false)}
         onSubmit={(config) => {
-          console.log('发布配置：', config, '模型：', pendingPublishModel);
+          if (onAddReviewTaskNotification && pendingPublishModel) {
+            // 构造reviewTasks
+            const reviewTasks = (config.reviewers || []).map(id => {
+              const user = userList.find(u => u.id === id);
+              return user ? { reviewer: user.name, status: 'Pending', note: '' } : null;
+            }).filter(Boolean);
+            // 更新模型，添加reviewTasks字段
+            setModels(models => models.map(m =>
+              m.id === pendingPublishModel.id
+                ? { ...m, reviewTasks }
+                : m
+            ));
+            onAddReviewTaskNotification(pendingPublishModel, config.reviewers);
+          }
           setShowReviewConfigModal(false);
         }}
         reviewers={userList}

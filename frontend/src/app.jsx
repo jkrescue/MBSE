@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { models as initialModels } from './data';
 import { users as userList } from './data';
@@ -10,6 +10,7 @@ import PermissionManagementPage from './components/PermissionManagementPage';
 import VersionManagementPage from './components/VersionManagementPage';
 import ReviewPanel from './components/ReviewPanel';
 import ReferenceInfoPage from './components/ReferenceInfoPage';
+import ReviewManagementPage from './components/ReviewManagementPage';
 import logo from './MMP_logo.png';
 import userIcon from './user_icon.avif';
 import { FaBell } from 'react-icons/fa';
@@ -48,8 +49,16 @@ const initialNotifications = [
 ];
 
 function App() {
+  // 初始化时优先从 localStorage 读取 models
+  const getInitialModels = () => {
+    try {
+      const stored = localStorage.getItem('models');
+      if (stored) return JSON.parse(stored);
+    } catch (e) { console.error('读取本地模型数据失败', e); }
+    return initialModels;
+  };
   const [currentPage, setCurrentPage] = useState('overview');
-  const [models, setModels] = useState(initialModels);
+  const [models, setModelsRaw] = useState(getInitialModels());
   const [selectedModel, setSelectedModel] = useState(null);
   const [selectedModelForVersions, setSelectedModelForVersions] = useState(null);
   const [showManagementDropdown, setShowManagementDropdown] = useState(false);
@@ -57,8 +66,24 @@ function App() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [showNotificationDropdown, setShowNotificationDropdown] = useState(false);
+  const [reviewTasks, setReviewTasks] = useState([]);
+  const [targetModelId, setTargetModelId] = useState(null);
+  // 调试面板拖动相关
+  const [debugPos, setDebugPos] = useState({ right: 0, bottom: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0, right: 0, bottom: 0 });
 
-  const userNames = Object.keys(userList);
+  const userNames = userList.map(u => u.name);
+
+  // setModels 包装，自动同步 localStorage
+  const setModels = (updater) => {
+    setModelsRaw(prev => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      try { localStorage.setItem('models', JSON.stringify(next)); } catch (e) { console.error('写入本地模型数据失败', e); }
+      console.log('setModels后 models:', next);
+      return next;
+    });
+  };
 
   const navigateTo = (page) => {
     setCurrentPage(page);
@@ -148,23 +173,106 @@ function App() {
     });
   };
 
-  const handleReview = (id, action, note) => {
+  const handleReview = (id, action, note, reviewer) => {
     setModels(models => models.map(m => {
       if (m.id === id) {
+        // 多评审人独立评审
+        if (Array.isArray(m.reviewTasks)) {
+          const updatedReviewTasks = m.reviewTasks.map(rt => {
+            if (rt.reviewer === reviewer && rt.status === 'Pending') {
+              return {
+                ...rt,
+                status: action === 'approve' ? 'Approved' : 'Rejected',
+                note: action === 'approve' ? '' : (note ? `${note}  —${reviewer}` : `—${reviewer}`)
+              };
+            }
+            return rt;
+          });
+          // 判定最终模型状态
+          let newStatus = m.status;
+          let reviewNote = '';
+          if (updatedReviewTasks.some(rt => rt.status === 'Rejected')) {
+            newStatus = 'Rejected';
+            reviewNote = updatedReviewTasks.filter(rt => rt.status === 'Rejected').map(rt => rt.note).join('；');
+          } else if (updatedReviewTasks.every(rt => rt.status === 'Approved')) {
+            newStatus = 'Published';
+            reviewNote = '';
+          } else {
+            newStatus = 'Pending Review';
+            reviewNote = '';
+          }
+          return { ...m, reviewTasks: updatedReviewTasks, status: newStatus, reviewNote };
+        }
+        // 兼容无reviewTasks的老模型
         if (action === 'approve') {
           return { ...m, status: 'Published', permission: 'Public', reviewNote: '' };
         } else {
-          return { ...m, status: 'Rejected', permission: 'Private', reviewNote: note || '发布未成功' };
+          const formattedNote = note ? `${note}  —${reviewer}` : `—${reviewer}`;
+          return { ...m, status: 'Rejected', permission: 'Private', reviewNote: formattedNote };
         }
       }
       return m;
     }));
   };
 
+  const handleAddReviewTaskNotification = (model, reviewers) => {
+    reviewers.forEach(reviewerId => {
+      const reviewer = userList.find(u => u.id === reviewerId);
+      if (reviewer) {
+        setNotifications(prev => [
+          {
+            id: `task_${model.id}_${reviewerId}_${Date.now()}`,
+            type: 'review-task',
+            title: '新的模型评审任务',
+            content: `你有一个新的模型评审任务：${model.name}，请及时处理。`,
+            time: new Date().toLocaleString(),
+            read: false,
+            link: `/review-management?modelId=${model.id}`,
+            receiver: reviewer.name,
+            modelId: model.id,
+          },
+          ...prev
+        ]);
+      }
+    });
+  };
+
+  const handleDragStart = (e) => {
+    setDragging(true);
+    dragStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      right: debugPos.right,
+      bottom: debugPos.bottom
+    };
+    e.preventDefault();
+  };
+  const handleDrag = (e) => {
+    if (!dragging) return;
+    const dx = dragStart.current.x - e.clientX;
+    const dy = dragStart.current.y - e.clientY;
+    setDebugPos({
+      right: Math.max(0, dragStart.current.right + dx),
+      bottom: Math.max(0, dragStart.current.bottom + dy)
+    });
+  };
+  const handleDragEnd = () => setDragging(false);
+
+  useEffect(() => {
+    if (dragging) {
+      window.addEventListener('mousemove', handleDrag);
+      window.addEventListener('mouseup', handleDragEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleDrag);
+        window.removeEventListener('mouseup', handleDragEnd);
+      };
+    }
+  }, [dragging]);
+
   const renderPage = () => {
     switch (currentPage) {
       case 'overview':
-        return <ModelOverviewPage models={models} setModels={setModels} onSelectModel={handleSelectModel} onManageVersions={handleManageVersions} currentUser={currentUser} />;
+        return <ModelOverviewPage models={models} setModels={setModels} onSelectModel={handleSelectModel} onManageVersions={handleManageVersions} currentUser={currentUser} onAddReviewTaskNotification={handleAddReviewTaskNotification} />;
       case 'detail':
         return <ModelDetailPage 
                   model={selectedModel} 
@@ -179,12 +287,18 @@ function App() {
         return <UploadPage onAddModel={handleAddModel} onBack={handleBackToOverview} currentUser={currentUser} />;
       case 'permissions':
         return <PermissionManagementPage />;
-      case 'versions':
-        return <VersionManagementPage model={selectedModelForVersions} models={models} currentUser={currentUser} currentRole={userList.find(u => u.name === currentUser)?.role} onUpdateModels={handleUpdateModels} />;
+      case 'versions': {
+        // 优先选中当前用户可编辑的模型
+        const editableModel = models.find(m => m.uploader === currentUser || (userList.find(u => u.name === currentUser)?.role === 'admin'));
+        const safeModel = selectedModelForVersions || editableModel || models[0] || null;
+        return <VersionManagementPage model={safeModel} models={models} currentUser={currentUser} currentRole={userList.find(u => u.name === currentUser)?.role} onUpdateModels={handleUpdateModels} />;
+      }
       case 'review':
-        return <ReviewPanel models={models} onReview={handleReview} />;
+        return <ReviewPanel models={models} onReview={handleReview} targetModelId={targetModelId} />;
       case 'references':
         return <ReferenceInfoPage />;
+      case 'review-management':
+        return <ReviewManagementPage reviewTasks={reviewTasks} currentUser={currentUser} targetModelId={targetModelId} />;
       default:
         return <ModelOverviewPage models={models} onSelectModel={handleSelectModel} />;
     }
@@ -224,7 +338,12 @@ function App() {
           {/* 消息通知铃铛 */}
           <div className="notification-bell" style={{ position: 'relative', marginRight: '18px', cursor: 'pointer' }} onClick={() => setShowNotificationDropdown(v => !v)}>
             <FaBell size={22} color="#007bff" />
-            {notifications.some(n => !n.read) && (
+            {notifications.filter(n =>
+              (
+                (n.type === 'review-task' && n.receiver === currentUser) ||
+                (n.type !== 'review-task' && n.content && n.content.includes('Frank'))
+              ) && !n.read
+            ).length > 0 && (
               <span style={{
                 position: 'absolute',
                 top: '-4px',
@@ -239,7 +358,12 @@ function App() {
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 700
-              }}>{notifications.filter(n => !n.read).length}</span>
+              }}>{notifications.filter(n =>
+                (
+                  (n.type === 'review-task' && n.receiver === currentUser) ||
+                  (n.type !== 'review-task' && n.content && n.content.includes('Frank'))
+                ) && !n.read
+              ).length}</span>
             )}
             {showNotificationDropdown && (
               <div className="notification-dropdown" style={{
@@ -257,8 +381,14 @@ function App() {
                 overflowY: 'auto'
               }}>
                 <div style={{padding: '0.5rem 1rem', borderBottom: '1px solid #f0f1f2', fontWeight: 600, color: '#232b36'}}>消息通知</div>
-                {notifications.length === 0 && <div style={{padding: '1rem', color: '#888'}}>暂无通知</div>}
-                {notifications.map(n => (
+                {notifications.filter(n =>
+                  (n.type === 'review-task' && n.receiver === currentUser)
+                  || (n.type !== 'review-task' && n.content && n.content.includes('Frank'))
+                ).length === 0 && <div style={{padding: '1rem', color: '#888'}}>暂无通知</div>}
+                {notifications.filter(n =>
+                  (n.type === 'review-task' && n.receiver === currentUser)
+                  || (n.type !== 'review-task' && n.content && n.content.includes('Frank'))
+                ).map(n => (
                   <div key={n.id} style={{
                     padding: '0.7rem 1rem',
                     background: n.read ? '#fff' : '#eaf5ff',
@@ -269,7 +399,12 @@ function App() {
                     onClick={() => {
                       setNotifications(list => list.map(msg => msg.id === n.id ? { ...msg, read: true } : msg));
                       setShowNotificationDropdown(false);
-                      if (n.link) window.location.hash = n.link;
+                      if (n.type === 'review-task') {
+                        setCurrentPage('review');
+                        setTargetModelId(n.modelId);
+                      } else if (n.link) {
+                        window.location.hash = n.link;
+                      }
                     }}
                   >
                     <div style={{fontSize: '1em', color: n.read ? '#232b36' : '#007bff'}}>{n.title}</div>
@@ -294,7 +429,14 @@ function App() {
           {userMenuOpen && (
             <div className="user-dropdown">
               {userNames.map(name => (
-                <div key={name} className="user-dropdown-item" onClick={() => { setCurrentUser(name); setUserMenuOpen(false); }}>
+                <div key={name} className="user-dropdown-item" onClick={() => {
+                  setCurrentUser(name);
+                  setUserMenuOpen(false);
+                  // 自动跳转到评审面板并高亮当前用户的第一个待评审模型
+                  const firstPending = models.find(m => Array.isArray(m.reviewTasks) && m.reviewTasks.some(rt => rt.reviewer === name && rt.status === 'Pending'));
+                  setCurrentPage('review');
+                  setTargetModelId(firstPending ? firstPending.id : null);
+                }}>
                   <img src={userIcon} alt="user" className="user-icon-mini" />
                   <span>{name}（{(userList.find(u => u.name === name) || {}).role}）</span>
                 </div>
@@ -312,6 +454,34 @@ function App() {
       <footer className="App-footer">
         <p>© 2023 MMP Demo</p>
       </footer>
+      {/* 开发者调试面板：可拖动 */}
+      <div
+        style={{
+          position: 'fixed',
+          right: debugPos.right,
+          bottom: debugPos.bottom,
+          width: '480px',
+          maxHeight: '60vh',
+          background: 'rgba(0,0,0,0.85)',
+          color: '#fff',
+          fontSize: '12px',
+          zIndex: 9999,
+          overflow: 'auto',
+          borderTopLeftRadius: '8px',
+          padding: '8px',
+          fontFamily: 'monospace',
+          boxShadow: '0 0 8px #0008',
+          cursor: dragging ? 'move' : 'default',
+          userSelect: dragging ? 'none' : 'auto',
+        }}
+      >
+        <div
+          style={{fontWeight:700,marginBottom:4,cursor:'move',background:'#222',padding:'2px 8px',borderRadius:'4px'}}
+          onMouseDown={handleDragStart}
+        >开发者调试面板 models</div>
+        <div style={{marginBottom:4}}>currentUser: <span style={{color:'#ffd700'}}>{JSON.stringify(currentUser)}</span></div>
+        <pre style={{whiteSpace:'pre-wrap',wordBreak:'break-all',margin:0}}>{JSON.stringify(models, null, 2)}</pre>
+      </div>
     </div>
   );
 }
