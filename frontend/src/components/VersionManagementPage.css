@@ -354,9 +354,8 @@
 }
 
 .version-card.selected {
-  border-color: #ff9800 !important;
-  box-shadow: 0 4px 16px rgba(255,152,0,0.10);
-  background: #fffbe6;
+  border-color: #0366d6;
+  box-shadow: 0 0 0 2px rgba(3, 102, 214, 0.3);
 }
 
 .version-card.latest {
@@ -939,10 +938,10 @@
 
 /* Change Log Styles */
 .change-log-container {
-  margin-top: 3rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
   background-color: #ffffff;
   border-radius: 8px;
-  padding: 1.5rem 2rem;
   border: 1px solid #e1e4e8;
   box-shadow: 0 2px 8px rgba(27,31,35,0.04);
 }
@@ -1127,4 +1126,26 @@
 
 .add-dep-form .btn {
   flex-shrink: 0;
+}
+
+.version-selectors-in-modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: #f6f8fa;
+  border-bottom: 1px solid #e1e4e8;
+  margin-bottom: 1rem;
+}
+
+.version-selectors-in-modal label {
+  font-weight: 600;
+}
+
+.version-selectors-in-modal select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  min-width: 120px;
 }

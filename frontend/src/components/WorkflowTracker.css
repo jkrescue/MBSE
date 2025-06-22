@@ -1,0 +1,84 @@
+.workflow-tracker {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 2rem 0;
+}
+
+.workflow-stage {
+    display: flex;
+    align-items: center;
+    text-align: left;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 2px solid #dfe6e9;
+    background-color: #f8f9fa;
+    width: 180px;
+    transition: all 0.3s ease;
+}
+
+.stage-icon {
+    font-size: 2rem;
+}
+
+.stage-name {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #2d3436;
+}
+
+.stage-meta {
+    font-size: 0.8rem;
+    color: #636e72;
+    margin-top: 4px;
+}
+.stage-meta span {
+    display: block;
+}
+
+/* Status-specific styles */
+.workflow-stage.completed,
+.workflow-stage.passed {
+    border-color: #27ae60;
+}
+.icon-passed { color: #27ae60; }
+
+.workflow-stage.failed {
+    border-color: #c0392b;
+}
+.icon-failed { color: #c0392b; }
+
+.workflow-stage.inprogress {
+    border-color: #2980b9;
+    box-shadow: 0 0 15px rgba(41, 128, 185, 0.3);
+    transform: scale(1.05);
+}
+.icon-inprogress { color: #2980b9; }
+
+.icon-pending { color: #b2bec3; }
+
+
+.workflow-connector {
+    flex-grow: 1;
+    height: 2px;
+    background-color: #dfe6e9;
+    margin: 0 -10px;
+    position: relative;
+    top: 28px; /* Vertically center with the icons */
+}
+
+/* A bit of a trick to color the passed connectors */
+.workflow-stage.passed + .workflow-connector,
+.workflow-stage.completed + .workflow-connector {
+    background-color: #27ae60;
+}
+
+.workflow-tracker-empty {
+    color: #7f8c8d;
+    font-style: italic;
+    padding: 2rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+} 

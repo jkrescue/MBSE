@@ -14,6 +14,8 @@ import logo from './MMP_logo.png';
 import userIcon from './user_icon.avif';
 import { FaBell } from 'react-icons/fa';
 
+const STAGES = ['Draft', 'StaticCheck', 'TechnicalReview', 'QATesting', 'Published'];
+
 // 消息通知数据结构
 const initialNotifications = [
   {
@@ -88,6 +90,64 @@ function App() {
     setModels(updatedModels);
   };
 
+  const updateModelWorkflow = (modelId, versionNumber, newWorkflowData) => {
+    setModels(prevModels => {
+      return prevModels.map(m => {
+        if (m.id === modelId) {
+          const newVersions = m.versions.map(v => {
+            if (v.version === versionNumber) {
+              return { ...v, workflow: { ...v.workflow, ...newWorkflowData } };
+            }
+            return v;
+          });
+          return { ...m, versions: newVersions };
+        }
+        return m;
+      });
+    });
+  };
+
+  const handleApproveReview = (modelId, versionNumber) => {
+    const model = models.find(m => m.id === modelId);
+    const version = model.versions.find(v => v.version === versionNumber);
+    const { workflow } = version;
+    const currentStageIndex = STAGES.indexOf(workflow.currentStage);
+    const nextStage = STAGES[currentStageIndex + 1];
+
+    const newHistoryEntry = {
+      stage: workflow.currentStage,
+      status: 'Passed',
+      user: currentUser,
+      date: new Date().toISOString(),
+      comment: 'Approved.',
+    };
+    
+    updateModelWorkflow(modelId, versionNumber, {
+      currentStage: nextStage,
+      history: [...workflow.history, newHistoryEntry],
+    });
+  };
+
+  const handleRejectReview = (modelId, versionNumber, comment) => {
+    const model = models.find(m => m.id === modelId);
+    const version = model.versions.find(v => v.version === versionNumber);
+    const { workflow } = version;
+
+    const newHistoryEntry = {
+      stage: workflow.currentStage,
+      status: 'Failed',
+      user: currentUser,
+      date: new Date().toISOString(),
+      comment: comment,
+    };
+
+    updateModelWorkflow(modelId, versionNumber, {
+      currentStage: 'Draft', // Always return to draft on rejection
+      history: [...workflow.history, newHistoryEntry],
+      actionItems: [comment]
+    });
+  };
+
   const handleReview = (id, action, note) => {
     setModels(models => models.map(m => {
       if (m.id === id) {
@@ -106,7 +166,15 @@ function App() {
       case 'overview':
         return <ModelOverviewPage models={models} setModels={setModels} onSelectModel={handleSelectModel} onManageVersions={handleManageVersions} currentUser={currentUser} />;
       case 'detail':
-        return <ModelDetailPage model={selectedModel} onBack={handleBackToOverview} />;
+        return <ModelDetailPage 
+                  model={selectedModel} 
+                  allModels={models}
+                  currentUser={currentUser}
+                  onBack={handleBackToOverview} 
+                  onManageVersions={handleManageVersions}
+                  onApprove={handleApproveReview}
+                  onReject={handleRejectReview}
+                />;
       case 'upload':
         return <UploadPage onAddModel={handleAddModel} onBack={handleBackToOverview} currentUser={currentUser} />;
       case 'permissions':

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './VersionManagementPage.css';
+import Modal from './Modal';
+// import VersionDiffModal from './VersionDiffModal';
 
 // 基于LCS的精确Diff算法
 function diffLines(a, b) {
@@ -107,13 +109,15 @@ const ROLE_OPTIONS = [
 const VersionManagementPage = ({ model: initialModel, models: allModels, currentUser, currentRole, onUpdateModels }) => {
   const [model, setModel] = useState(initialModel);
   const [compareSelection, setCompareSelection] = useState([]);
-  const [showCompare, setShowCompare] = useState(false);
+  const [isDiffModalOpen, setDiffModalOpen] = useState(false);
   const [detailVersion, setDetailVersion] = useState(null);
   const [taggingVersion, setTaggingVersion] = useState(null);
   const [newTag, setNewTag] = useState('');
   const [editingDeps, setEditingDeps] = useState(null); // { version, deps: [] }
   const [depModel, setDepModel] = useState('');
   const [depVersion, setDepVersion] = useState('');
+  const [baseVersion, setBaseVersion] = useState(null);
+  const [compareVersion, setCompareVersion] = useState(null);
 
   useEffect(() => {
     setModel(initialModel);
@@ -129,7 +133,6 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
     const newSelectedModel = allModels.find(m => m.id === selectedId);
     setModel(newSelectedModel);
     setCompareSelection([]);
-    setShowCompare(false);
     setDetailVersion(null);
   };
 
@@ -215,6 +218,17 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
     });
   };
 
+  const handleStartCompare = () => {
+    if (compareSelection.length === 2) {
+      const sorted = [...compareSelection].sort((a,b) => new Date(a.date) - new Date(b.date));
+      setBaseVersion(sorted[0]);
+      setCompareVersion(sorted[1]);
+      setDiffModalOpen(true);
+    } else {
+      alert('请选择两个版本进行对比。');
+    }
+  };
+
   // 版本回退功能
   const handleRollback = (version) => {
     if (!window.confirm(`确定要回退到版本 ${version.version} 吗？此操作会生成一个新版本。`)) return;
@@ -256,7 +270,7 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
   };
 
   // 判断当前用户是否有编辑权限
-  const canEdit = currentRole === 'Engineer' || currentRole === 'uploader';
+  const canEdit = model && (currentRole === 'admin' || currentUser === model.uploader);
 
   // 文件内容对比视图
   function renderFileDiff(file1, file2) {
@@ -345,44 +359,6 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
       </div>
     );
   }
-
-  const renderComparison = () => {
-    const [version1, version2] = compareSelection;
-    const { diffs, desc } = diffVersions(version1, version2);
-    const highlight = (field) => diffs.includes(field) ? 'diff-highlight' : '';
-    // 文件名集合
-    const fileNames = Array.from(new Set([
-      ...(version1.files ? version1.files.map(f => f.name) : []),
-      ...(version2.files ? version2.files.map(f => f.name) : [])
-    ]));
-    return (
-      <div className="comparison-view">
-        <h2>版本对比分析</h2>
-        <div className="comparison-columns">
-          <div className="comparison-column">
-            <h3>版本 {version1.version}</h3>
-            <p className={highlight('创建者')}><strong>创建者:</strong> {version1.author || version1.creator}</p>
-            <p className={highlight('创建时间')}><strong>创建时间:</strong> {version1.date}</p>
-            <p className={highlight('描述')}><strong>描述:</strong> {version1.description || version1.changes}</p>
-          </div>
-          <div className="comparison-column">
-            <h3>版本 {version2.version}</h3>
-            <p className={highlight('创建者')}><strong>创建者:</strong> {version2.author || version2.creator}</p>
-            <p className={highlight('创建时间')}><strong>创建时间:</strong> {version2.date}</p>
-            <p className={highlight('描述')}><strong>描述:</strong> {version2.description || version2.changes}</p>
-          </div>
-        </div>
-        <div className="diff-desc">{desc}</div>
-        <h3 style={{marginTop:'1.5rem'}}>文件内容对比</h3>
-        {fileNames.map(name => {
-          const f1 = version1.files ? version1.files.find(f => f.name === name) : null;
-          const f2 = version2.files ? version2.files.find(f => f.name === name) : null;
-          return renderFileDiff(f1, f2);
-        })}
-        <button onClick={() => setShowCompare(false)} className="btn btn-secondary">关闭比较</button>
-      </div>
-    );
-  };
 
   const renderDetail = (version) => (
     <div className="version-detail-modal">
@@ -555,71 +531,55 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
   const renderUserInfo = () => (
     <div style={{marginBottom: '1.2em', display:'flex', alignItems:'center', gap:'1em'}}>
       <span style={{fontWeight:600}}>当前用户：</span>
-      <span style={{padding:'6px 12px', fontSize:'1em', borderRadius:4, background:'#f6f8fa', border:'1px solid #ccc'}}>{currentUser}</span>
+      <span style={{padding:'6px 12px', fontSize:'1em', borderRadius:4, background:'#f6f8fa', border:'1px solid #ccc'}}>Bob</span>
       <span style={{fontWeight:600}}>当前角色：</span>
-      <span style={{padding:'6px 12px', fontSize:'1em', borderRadius:4, background:'#f6f8fa', border:'1px solid #ccc'}}>{currentRole || '—'}</span>
+      <span style={{padding:'6px 12px', fontSize:'1em', borderRadius:4, background:'#f6f8fa', border:'1px solid #ccc'}}>Engineer</span>
     </div>
   );
 
   return (
-    <div className="version-page">
-      {renderUserInfo()}
-      <h1>版本管理</h1>
-      {!initialModel && (
-        <div className="model-selector-container">
-          <label htmlFor="model-select">选择一个模型以管理其版本:</label>
-          <select id="model-select" onChange={handleModelChange} value={model?.id || ''}>
-            <option value="" disabled>请选择...</option>
-            {allModels.map(m => (
-              <option key={m.id} value={m.id}>{m.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
-      {model ? (
-        <>
-          <h2>{model.name} - 版本历史</h2>
-          {compareSelection.length === 2 && !showCompare && (
-            <div className="compare-actions">
-                <button onClick={() => setShowCompare(true)} className="btn btn-primary">比较选定的两个版本</button>
+    <div className="vmp-container">
+      <div className="vmp-sidebar">
+        {/* ... */}
+      </div>
+
+      <div className="vmp-main-content">
+        {renderUserInfo()}
+        {model ? (
+          <>
+            <h2>{model.name} - 版本历史</h2>
+            <div className="version-toolbar">
+              <p>选择任意两个版本进行对比:</p>
+              <button 
+                onClick={handleStartCompare} 
+                disabled={compareSelection.length !== 2}
+                className="btn btn-primary"
+              >
+                比较选定的版本
+              </button>
             </div>
-          )}
-          {showCompare && compareSelection.length === 2 ? (
-            renderComparison()
-          ) : (
+            
             <div className="version-card-list">
               {model.versions.map((version, idx) => (
                 <div
                   key={version.version}
                   className={`version-card${idx === 0 ? ' latest' : ''}${compareSelection.includes(version) ? ' selected' : ''}`}
-                  style={{
-                    border: idx === 0 ? '2px solid #007bff' : '1px solid #e1e4e8',
-                    background: idx === 0 ? '#f6faff' : '#fff',
-                    boxShadow: '0 2px 8px rgba(27,31,35,0.04)',
-                    borderRadius: '10px',
-                    marginBottom: '1.2rem',
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    padding: '1.2rem 1.5rem',
-                    position: 'relative',
-                  }}
                 >
-                  <div className="version-select" style={{marginRight: '1.2rem'}}>
+                  <div className="version-select">
                     <input
                       type="checkbox"
                       checked={compareSelection.includes(version)}
                       onChange={() => handleCompareSelect(version)}
                       title="选择以进行比较"
-                      style={{width: 18, height: 18}}
                     />
                   </div>
-                  <div className="version-info" style={{flex: 1}}>
-                    <div style={{display:'flex', alignItems:'center', gap:'0.7em', flexWrap:'wrap'}}>
-                      <h3 style={{margin:0, fontWeight:700, color: idx === 0 ? '#007bff' : '#232b36'}}>版本 {version.version}</h3>
+                  <div className="version-info">
+                    <div className="version-card-header">
+                      <h3>版本 {version.version}</h3>
                       {idx === 0 && <span className="badge latest-badge">最新</span>}
                       {version.releaseTag && <span className="badge release-badge">{version.releaseTag}</span>}
                     </div>
-                    <div style={{marginTop:6}}><strong>创建者:</strong> {version.author || version.creator}</div>
+                    <div><strong>创建者:</strong> {version.author || version.creator}</div>
                     <div><strong>创建时间:</strong> {version.date}</div>
                     <div><strong>描述:</strong> {version.description || version.changes}</div>
                     <div className="version-dependencies">
@@ -628,7 +588,7 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
                     </div>
                     {version.files && <div><strong>文件数:</strong> {version.files.length}</div>}
                   </div>
-                  <div className="version-actions" style={{display:'flex', flexDirection:'column', gap:'0.5em', marginLeft:'1.5em'}}>
+                  <div className="version-actions">
                     <button onClick={() => setDetailVersion(version)} className="btn btn-primary">查看详情</button>
                     {canEdit && <button onClick={() => setTaggingVersion(version)} className="btn btn-info">设置标签</button>}
                     {canEdit && <button onClick={() => setEditingDeps({ version, deps: [...(version.dependencies || [])]})} className="btn btn-secondary">编辑依赖</button>}
@@ -638,17 +598,57 @@ const VersionManagementPage = ({ model: initialModel, models: allModels, current
                 </div>
               ))}
             </div>
+
+            {detailVersion && renderDetail(detailVersion)}
+            
+          </>
+        ) : (
+          <p>请从模型总览页选择一个模型，或在此处选择一个模型以开始管理版本。</p>
+        )}
+
+        <Modal
+          isOpen={isDiffModalOpen}
+          onClose={() => setDiffModalOpen(false)}
+          title={`版本对比: ${model.name}`}
+        >
+          {isDiffModalOpen && baseVersion && compareVersion && (
+            <div className="version-diff-modal-content">
+              <div className="version-selectors-in-modal">
+                <label>基准版本:</label>
+                <select value={baseVersion.version} onChange={e => setBaseVersion(model.versions.find(v => v.version === e.target.value))}>
+                  {model.versions.map(v => <option key={v.version} value={v.version}>{v.version}</option>)}
+                </select>
+                <span>vs</span>
+                <label>对比版本:</label>
+                <select value={compareVersion.version} onChange={e => setCompareVersion(model.versions.find(v => v.version === e.target.value))}>
+                  {model.versions.map(v => <option key={v.version} value={v.version}>{v.version}</option>)}
+                </select>
+              </div>
+
+              {(() => {
+                const v1 = baseVersion;
+                const v2 = compareVersion;
+                // @ts-ignore
+                const allFilenames = [...new Set([...(v1.files || []).map(f => f.name), ...(v2.files || []).map(f => f.name)])];
+
+                return (
+                    <div className="diff-results-container">
+                        {allFilenames.map((filename, index) => {
+                            const file1 = (v1.files || []).find(f => f.name === filename);
+                            const file2 = (v2.files || []).find(f => f.name === filename);
+                            return <React.Fragment key={index}>{renderFileDiff(file1, file2)}</React.Fragment>
+                        })}
+                    </div>
+                );
+              })()}
+            </div>
           )}
-          {detailVersion && renderDetail(detailVersion)}
-          {renderTagModal()}
-          {renderDependenciesModal()}
-          
-          {/* Display change log here */}
-          {renderChangeLog(model.changeLog)}
-        </>
-      ) : (
-        <p>请从模型总览页选择一个模型，或在此处选择一个模型以开始管理版本。</p>
-      )}
+        </Modal>
+
+        {renderTagModal()}
+        {renderDependenciesModal()}
+        {renderChangeLog(model ? model.changeLog : [])}
+      </div>
     </div>
   );
 };

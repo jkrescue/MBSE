@@ -1,0 +1,76 @@
+.review-action-panel {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    background-color: #f8f9fa;
+}
+
+.review-action-panel h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-size: 1.2rem;
+    border-bottom: 1px solid #dfe6e9;
+    padding-bottom: 0.5rem;
+}
+
+.action-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.reject-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex-grow: 1;
+}
+
+.reject-section textarea {
+    width: 100%;
+    min-height: 70px;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+.btn-approve, .btn-reject {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-approve {
+    background-color: #27ae60;
+    align-self: stretch; /* Make it same height as reject section */
+}
+.btn-approve:hover {
+    background-color: #2ecc71;
+}
+
+.btn-reject {
+    background-color: #c0392b;
+}
+.btn-reject:hover {
+    background-color: #e74c3c;
+}
+
+.review-panel-placeholder {
+    padding: 1rem;
+    text-align: center;
+    color: #7f8c8d;
+    background-color: #f8f9fa;
+    border: 1px dashed #ced4da;
+    border-radius: 8px;
+    margin-top: 1.5rem;
+} 
