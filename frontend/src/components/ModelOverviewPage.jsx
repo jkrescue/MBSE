@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { FaTable, FaThLarge, FaCog, FaStar, FaRegStar, FaAward } from 'react-icons/fa';
 import './ModelOverviewPage.css';
-import { modelTypes, allTags, statusOptions } from '../data';
+import { modelTypes, allTags, statusOptions, users as userList } from '../data';
 import ModelCard from './ModelCard';
 import AdvancedSearchModal from './AdvancedSearchModal';
 import DependencyModal from './DependencyModal';
+import ReviewConfigModal from './ReviewConfigModal';
 
 function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions, currentUser }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,6 +36,8 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
   const [currentView, setCurrentView] = useState('none');
   const [isDependencyModalOpen, setIsDependencyModalOpen] = useState(false);
   const [selectedModelForDeps, setSelectedModelForDeps] = useState(null);
+  const [showReviewConfigModal, setShowReviewConfigModal] = useState(false);
+  const [pendingPublishModel, setPendingPublishModel] = useState(null);
 
   const systemViews = useMemo(() => [
     { name: "我待评审的模型", filters: { advancedFilters: [[{field: 'uploader', value: currentUser}, {field: 'status', value: 'Pending Review'}]] } },
@@ -352,7 +355,8 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
                    onClick={e => {
                      e.stopPropagation();
                      if (model.status === 'Draft' || model.status === 'Rejected') {
-                       handlePublish(model);
+                       setPendingPublishModel(model);
+                       setShowReviewConfigModal(true);
                      }
                    }}
                    className="action-button"
@@ -474,6 +478,15 @@ function ModelOverviewPage({ models, setModels, onSelectModel, onManageVersions,
         onClose={() => setShowAdvancedSearch(false)}
         onApply={handleApplyAdvancedFilters}
         modelFields={searchableFields}
+      />
+      <ReviewConfigModal
+        visible={showReviewConfigModal}
+        onClose={() => setShowReviewConfigModal(false)}
+        onSubmit={(config) => {
+          console.log('发布配置：', config, '模型：', pendingPublishModel);
+          setShowReviewConfigModal(false);
+        }}
+        reviewers={userList}
       />
       <div className="main-content">
         <div className="filters-container">

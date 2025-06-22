@@ -180,7 +180,7 @@ function App() {
       case 'permissions':
         return <PermissionManagementPage />;
       case 'versions':
-        return <VersionManagementPage model={selectedModelForVersions} models={models} currentUser={currentUser} currentRole={userList[currentUser]?.role} onUpdateModels={handleUpdateModels} />;
+        return <VersionManagementPage model={selectedModelForVersions} models={models} currentUser={currentUser} currentRole={userList.find(u => u.name === currentUser)?.role} onUpdateModels={handleUpdateModels} />;
       case 'review':
         return <ReviewPanel models={models} onReview={handleReview} />;
       case 'references':
@@ -289,14 +289,14 @@ function App() {
           <div className="user-menu" onClick={() => setUserMenuOpen(v => !v)}>
             <img src={userIcon} alt="user" className="user-icon" />
             <span className="user-name">{currentUser}</span>
-            <span className="user-role">({userList[currentUser].role})</span>
+            <span className="user-role">({(userList.find(u => u.name === currentUser) || {}).role})</span>
           </div>
           {userMenuOpen && (
             <div className="user-dropdown">
               {userNames.map(name => (
                 <div key={name} className="user-dropdown-item" onClick={() => { setCurrentUser(name); setUserMenuOpen(false); }}>
                   <img src={userIcon} alt="user" className="user-icon-mini" />
-                  <span>{name}（{userList[name].role}）</span>
+                  <span>{name}（{(userList.find(u => u.name === name) || {}).role}）</span>
                 </div>
               ))}
               <div className="user-dropdown-item logout" onClick={() => { setCurrentUser(''); setUserMenuOpen(false); }}>

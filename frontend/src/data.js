@@ -487,14 +487,14 @@ export const models = [
   }
 ];
 
-export const users = {
-    'Alice': { role: 'Engineer' },
-    'Bob': { role: 'Engineer' },
-    'Charlie': { role: 'Engineer' },
-    'David': { role: 'Architect/Reviewer' },
-    'Eve': { role: 'Project Manager' },
-    'Frank': { role: 'Administrator' },
-};
+export const users = [
+  { id: 1, name: 'Alice', role: '工程师' },
+  { id: 2, name: 'Bob', role: '工程师' },
+  { id: 3, name: 'Charlie', role: '工程师' },
+  { id: 4, name: 'David', role: '架构师/评审员' },
+  { id: 5, name: 'Eve', role: '项目经理' },
+  { id: 6, name: 'Frank', role: '管理员' }
+];
 
 export const modelTypes = ['All Types', 'Simulink', 'Modelica', 'SysML', 'FMU/SSP', 'Other'];
 export const statusOptions = ['All Statuses', 'Published', 'Pending Review', 'Draft', 'Rejected', 'Archived'];
