@@ -17,6 +17,7 @@ header { background: #333; color: #fff; padding: 10px; display: flex; justify-co
 #statusBar { background: #eee; padding: 5px 10px; text-align: right; font-size: 12px; }
 .hidden { display: none; }
 
+
 body.dark {
   background: #333;
   color: #eee;
@@ -26,3 +27,4 @@ body.dark header {
 }
 body.dark #tabs { background: #555; }
 body.dark #tabs li.active { background: #444; }
+

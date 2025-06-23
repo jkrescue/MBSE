@@ -1,5 +1,7 @@
+
 let currentRole = '';
 const roleConfig = {
+
   admin: {
     title: '平台管理员',
     sidebar: ['系统监控','成员管理','角色分配'],
@@ -39,17 +41,21 @@ function login() {
 
 function showConsole(role) {
   const cfg = roleConfig[role];
+
   currentRole = role;
   document.getElementById('login').classList.add('hidden');
   document.getElementById('console').classList.remove('hidden');
   document.getElementById('roleTitle').textContent = cfg.title + ' 控制台';
+
   buildSidebar(cfg);
   buildTabs();
   createModules(cfg);
   document.getElementById('extra').textContent = cfg.extra;
+
   const msgs = cfg.messages || [];
   document.getElementById('messageCenter').textContent = `消息(${msgs.length})`;
   document.getElementById('messageList').innerHTML = msgs.map(m=>`<li>${m}</li>`).join('');
+
   loadLayout(role);
 }
 
@@ -77,13 +83,16 @@ function createModules(cfg) {
     const sec = document.createElement('section');
     sec.id = 'mod-' + name;
     sec.textContent = name + ' 内容区域';
+
     sec.draggable = true;
     sec.ondragstart = dragStart;
     sec.ondragover = dragOver;
     sec.ondrop = drop;
+
     container.appendChild(sec);
   });
 }
+
 
 function toggleModule(name, show) {
   const id = 'mod-' + name;
@@ -120,6 +129,7 @@ function activateTab(name) {
   });
 }
 
+
 let dragSrc;
 function dragStart(e) {
   dragSrc = e.currentTarget;
@@ -138,6 +148,7 @@ function drop(e) {
   }
 }
 
+
 function toggleTheme() {
   document.body.classList.toggle('dark');
   localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : '');
@@ -145,6 +156,7 @@ function toggleTheme() {
 
 function loadLayout(role) {
   const layout = JSON.parse(localStorage.getItem('layout-' + role) || '{}');
+
   if (layout.order) {
     const container = document.getElementById('tab-overview');
     layout.order.forEach(name => {
@@ -159,11 +171,13 @@ function loadLayout(role) {
       if (chk) chk.checked = layout.visibility[k];
     });
   }
+
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'dark') document.body.classList.add('dark');
 }
 
 function saveLayout() {
+
   const role = currentRole;
   const visibility = {};
   document.querySelectorAll('#sidebar div').forEach(div => {
@@ -173,9 +187,11 @@ function saveLayout() {
   });
   const order = Array.from(document.querySelectorAll('#tab-overview section')).map(sec => sec.id.replace('mod-',''));
   localStorage.setItem('layout-' + role, JSON.stringify({order, visibility}));
+
 }
 
 window.addEventListener('DOMContentLoaded', () => {
   const theme = localStorage.getItem('theme');
   if (theme === 'dark') document.body.classList.add('dark');
 });
+
