@@ -1,0 +1,7 @@
+body { font-family: Arial, sans-serif; margin: 0; }
+header { background: #333; color: #fff; padding: 10px; display: flex; justify-content: space-between; align-items: center; }
+.layout { display: flex; height: calc(100vh - 50px); }
+#sidebar { width: 200px; background: #f2f2f2; padding: 10px; }
+#main { flex: 1; padding: 10px; }
+#extra { width: 200px; background: #fafafa; padding: 10px; }
+.hidden { display: none; }
