@@ -1,4 +1,5 @@
 const roleConfig = {
+ roleConfig = {
   admin: {
     title: '平台管理员',
     sidebar: ['系统监控','成员管理','角色分配'],
@@ -41,13 +42,16 @@ function showConsole(role) {
   document.getElementById('login').classList.add('hidden');
   document.getElementById('console').classList.remove('hidden');
   document.getElementById('roleTitle').textContent = cfg.title + ' 控制台';
+
   buildSidebar(cfg);
   buildTabs();
   createModules(cfg);
   document.getElementById('extra').textContent = cfg.extra;
+
   const msgs = cfg.messages || [];
   document.getElementById('messageCenter').textContent = `消息(${msgs.length})`;
-  document.getElementById('messageList').innerHTML = msgs.map(m=>`<li>${m}</li>`).join('');
+  document.getElementById('messageList').innerHTML = msgs.map(m => `<li>${m}</li>`).join('');
+
   loadLayout(role);
 }
 
@@ -78,6 +82,7 @@ function createModules(cfg) {
     container.appendChild(sec);
   });
 }
+
 
 function toggleModule(name, show) {
   const id = 'mod-' + name;
@@ -145,3 +150,5 @@ window.addEventListener('DOMContentLoaded', () => {
   const theme = localStorage.getItem('theme');
   if (theme === 'dark') document.body.classList.add('dark');
 });
+}
+
