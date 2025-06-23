@@ -2,31 +2,42 @@ const roleConfig = {
   admin: {
     title: '平台管理员',
     sidebar: ['系统监控','成员管理','角色分配'],
+
     messages: ['系统已更新','有新的用户申请'],
+
+
     extra: '系统日志\n安全审计'
   },
   pm: {
     title: '项目经理',
     sidebar: ['项目总览','任务燃尽','资源面板'],
+
     messages: ['项目A 截止日期临近','请检查资源分配'],
+
     extra: '提醒中心'
   },
   architect: {
     title: '系统架构师',
     sidebar: ['项目列表','架构编辑','版本比对'],
+
     messages: ['模型库更新','请同步最新需求'],
+
     extra: 'SSP 导出'
   },
   sim: {
     title: '仿真工程师',
     sidebar: ['仿真任务','流程编辑','结果面板'],
+
     messages: ['仿真B 运行完成','诊断报告生成'],
+
     extra: '仿真助手'
   },
   model: {
     title: '建模工程师',
     sidebar: ['建模任务','模型库','上传工具'],
+
     messages: ['新的模型任务分配'],
+
     extra: '快速建模模板'
   }
 };
@@ -41,6 +52,7 @@ function showConsole(role) {
   document.getElementById('login').classList.add('hidden');
   document.getElementById('console').classList.remove('hidden');
   document.getElementById('roleTitle').textContent = cfg.title + ' 控制台';
+
   buildSidebar(cfg);
   createModules(cfg);
   document.getElementById('extra').textContent = cfg.extra;
@@ -94,4 +106,5 @@ function closeMessages() {
 function logout() {
   document.getElementById('console').classList.add('hidden');
   document.getElementById('login').classList.remove('hidden');
+
 }
