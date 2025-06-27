@@ -10,6 +10,7 @@ import 'reactflow/dist/style.css';
 import { initialNodes, initialEdges } from './workflowData';
 import './App.css';
 import SubWorkflow from './components/SubWorkflow.jsx';
+import ToolDataSelector from './components/ToolDataSelector.jsx';
 
 const statusColors = {
   pending: '#f0f0f0',
@@ -121,6 +122,11 @@ function App() {
     setToolData([]);
   };
 
+  const handleSelectSubNode = (sub) => {
+    setSelectedSub({ id: sub.id, data: { label: sub.label } });
+    setToolData([]);
+  };
+
   const onSubNodeClick = (_e, node) => {
     setSelectedSub(node);
   };
@@ -130,7 +136,7 @@ function App() {
       const res = await fetch(api);
       const data = await res.json();
       setToolData(data.items || data);
-    } catch (e) {
+    } catch {
       // fallback demo data
       setToolData([{ id: 1, name: '示例数据' }]);
     }
@@ -186,10 +192,55 @@ function App() {
                   checked={sn.active}
                   onChange={() => toggleSubNode(selected.id, sn.id)}
                 />
-                {sn.label}
-                {sn.required ? ' (必选)' : ''}
+                <span
+                  onClick={() => handleSelectSubNode(sn)}
+                  style={{ cursor: 'pointer', marginLeft: '4px' }}
+                >
+                  {sn.label}
+                  {sn.required ? ' (必选)' : ''}
+                </span>
               </label>
             ))}
+            {selectedSub && (
+              <div style={{ borderTop: '1px solid #ddd', paddingTop: '0.5rem' }}>
+                <h4>{selectedSub.data.label} 配置</h4>
+                {selected.data.subNodes
+                  .find((sn) => sn.id === selectedSub.id)
+                  ?.config?.tool && (
+                  <div>
+                    <p>
+                      外部工具:{' '}
+                      {
+                        selected.data.subNodes.find((sn) => sn.id === selectedSub.id)
+                          .config.tool
+                      }
+                    </p>
+                    <button
+                      onClick={() =>
+                        window.open(
+                          selected.data.subNodes.find((sn) => sn.id === selectedSub.id)
+                            .config.link,
+                          '_blank'
+                        )
+                      }
+                    >
+                      打开工具
+                    </button>
+                    <button
+                      onClick={() =>
+                        fetchToolData(
+                          selected.data.subNodes.find((sn) => sn.id === selectedSub.id)
+                            .config.restApi
+                        )
+                      }
+                    >
+                      解析内容
+                    </button>
+                    {toolData.length > 0 && <ToolDataSelector data={toolData} />}
+                  </div>
+                )}
+              </div>
+            )}
             <button onClick={openSubWorkflow}>查看子节点视图</button>
             <button onClick={() => startFromNode(selected)}>从此处开始执行</button>
           </div>
