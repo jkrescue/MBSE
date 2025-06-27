@@ -2,12 +2,16 @@ import { useCallback, useState } from 'react';
 import ReactFlow, { Background, Controls, MiniMap, applyEdgeChanges, applyNodeChanges } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { initialNodes, initialEdges } from './workflowData';
+import NodeDetail from './NodeDetail.jsx';
 import './App.css';
 
 function App() {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [selected, setSelected] = useState(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [subNode, setSubNode] = useState(null);
+  const [polarionData, setPolarionData] = useState([]);
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -20,6 +24,7 @@ function App() {
 
   const onNodeClick = (_e, node) => {
     setSelected(node);
+    setSubNode(null);
   };
 
   const toggleActive = (id) => {
@@ -65,6 +70,12 @@ function App() {
     alert(`Start from ${node.data.label}`);
   };
 
+  const loadPolarion = async () => {
+    const res = await fetch('/polarionSample.json');
+    const data = await res.json();
+    setPolarionData(data);
+  };
+
   return (
     <div className="container">
       <div className="canvas">
@@ -105,12 +116,49 @@ function App() {
                 {sn.required ? ' (必选)' : ''}
               </label>
             ))}
+            <button onClick={() => setShowDetail(true)}>查看子节点视图</button>
             <button onClick={() => startFromNode(selected)}>从此处开始执行</button>
           </div>
         ) : (
           <div>选择一个节点查看详情</div>
         )}
+
+        {subNode && (
+          <div className="subConfig">
+            <h4>子节点配置 - {subNode.label}</h4>
+            {subNode.tool && (
+              <p>
+                工具: {subNode.tool}{' '}
+                {subNode.url && (
+                  <a href={subNode.url} target="_blank" rel="noreferrer">
+                    打开
+                  </a>
+                )}
+              </p>
+            )}
+            {subNode.desc && <p>{subNode.desc}</p>}
+            {subNode.tool === 'Polarion' && (
+              <div>
+                <button onClick={loadPolarion}>加载Polarion数据</button>
+                {polarionData.length > 0 && (
+                  <ul>
+                    {polarionData.map((r) => (
+                      <li key={r.id}>{r.id}: {r.title}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
+      {showDetail && selected && (
+        <NodeDetail
+          node={selected}
+          onClose={() => setShowDetail(false)}
+          onSelectSub={(sn) => setSubNode(sn)}
+        />
+      )}
     </div>
   );
 }

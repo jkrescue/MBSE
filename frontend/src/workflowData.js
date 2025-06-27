@@ -6,11 +6,17 @@ export const initialNodes = [
       label: '需求管理与同步',
       active: true,
       subNodes: [
-        { id: 'link', label: '链接需求服务', active: true, required: true },
-        { id: 'create', label: '需求创建', active: true, required: true },
-        { id: 'edit', label: '需求编辑', active: false, required: false },
-        { id: 'review', label: '需求评审', active: false, required: false },
-        { id: 'flow', label: '需求流转', active: false, required: false }
+        { id: 'link', label: '链接需求服务', active: true, required: true, tool: 'Polarion', url: 'https://polarion.example.com', desc: '创建与Polarion或Doors的同步关系' },
+        { id: 'create', label: '需求创建', active: true, required: true, tool: 'Polarion', desc: '导入文档或livedoc新建' },
+        { id: 'edit', label: '需求编辑', active: false, required: false, tool: 'Polarion' },
+        { id: 'review', label: '需求评审', active: false, required: false, tool: 'Polarion' },
+        { id: 'flow', label: '需求流转', active: false, required: false, tool: 'EA', desc: '同步到EA' }
+      ],
+      subEdges: [
+        { id: 'link-create', source: 'link', target: 'create' },
+        { id: 'create-edit', source: 'create', target: 'edit' },
+        { id: 'edit-review', source: 'edit', target: 'review' },
+        { id: 'review-flow', source: 'review', target: 'flow' }
       ]
     }
   },
@@ -21,10 +27,15 @@ export const initialNodes = [
       label: '功能与架构设计',
       active: true,
       subNodes: [
-        { id: 'sync', label: '同步需求', active: true, required: true },
-        { id: 'design', label: '功能与架构设计', active: true, required: true },
-        { id: 'review', label: '系统架构评审', active: false, required: false },
-        { id: 'publish', label: '模型发布', active: false, required: false }
+        { id: 'sync', label: '同步需求', active: true, required: true, tool: 'EA' },
+        { id: 'design', label: '功能与架构设计', active: true, required: true, tool: 'EA' },
+        { id: 'review', label: '系统架构评审', active: false, required: false, tool: 'WebCollaboration' },
+        { id: 'publish', label: '模型发布', active: false, required: false, tool: 'EA' }
+      ],
+      subEdges: [
+        { id: 'sync-design', source: 'sync', target: 'design' },
+        { id: 'design-review', source: 'design', target: 'review' },
+        { id: 'review-publish', source: 'review', target: 'publish' }
       ]
     }
   },
@@ -46,6 +57,18 @@ export const initialNodes = [
         { id: 'review', label: '系统模型评审', active: false, required: false },
         { id: 'report', label: '权衡分析报告输出', active: false, required: false },
         { id: 'archive', label: '评审结论与归档', active: false, required: false }
+      ],
+      subEdges: [
+        { id: 'import-dispatch', source: 'import', target: 'dispatch' },
+        { id: 'dispatch-upload', source: 'dispatch', target: 'upload' },
+        { id: 'upload-instantiate', source: 'upload', target: 'instantiate' },
+        { id: 'instantiate-config', source: 'instantiate', target: 'config' },
+        { id: 'config-doe', source: 'config', target: 'doe' },
+        { id: 'doe-schedule', source: 'doe', target: 'schedule' },
+        { id: 'schedule-preview', source: 'schedule', target: 'preview' },
+        { id: 'preview-review', source: 'preview', target: 'review' },
+        { id: 'review-report', source: 'review', target: 'report' },
+        { id: 'report-archive', source: 'report', target: 'archive' }
       ]
     }
   },
@@ -58,6 +81,9 @@ export const initialNodes = [
       subNodes: [
         { id: 'trace', label: '建立追溯关系链', active: true, required: true },
         { id: 'analysis', label: '需求覆盖度分析', active: false, required: false }
+      ],
+      subEdges: [
+        { id: 'trace-analysis', source: 'trace', target: 'analysis' }
       ]
     }
   }
