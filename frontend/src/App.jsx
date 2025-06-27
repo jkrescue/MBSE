@@ -1,208 +1,170 @@
-import { useCallback, useState } from 'react';
-import ReactFlow, {
-  Background,
-  Controls,
-  MiniMap,
-  applyEdgeChanges,
-  applyNodeChanges,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import { initialNodes, initialEdges } from './workflowData';
-import NodeDetail from './NodeDetail.jsx';
-import BpmnModeler from './BpmnModeler.jsx';
 
+
+
+
+import { useState } from 'react';
+import BpmnModeler from './BpmnModeler.jsx';
+import { initialNodes } from './workflowData';
 import './App.css';
 
+// 针对“链接需求服务”节点的属性卡片
+function RestConnectorProperties({ element }) {
+  // 仅演示，真实数据应从 element.businessObject 解析
+  return (
+    <div style={{padding: 16}}>
+      <div style={{fontWeight:'bold',fontSize:16,marginBottom:8}}>REST OUTBOUND CONNECTOR</div>
+      <div style={{color:'#888',marginBottom:16}}>链接需求服务</div>
+      {/* 通用 */}
+      <div style={{borderBottom:'1px solid #eee',marginBottom:8,paddingBottom:8}}>
+        <div style={{fontWeight:'bold'}}>General</div>
+        <div>Name</div>
+        <input style={{width:'100%',marginBottom:4}} value={element.name||''} readOnly />
+        <div>ID</div>
+        <input style={{width:'100%'}} value={element.id||''} readOnly />
+      </div>
+      {/* 模板 */}
+      <div style={{borderBottom:'1px solid #eee',marginBottom:8,paddingBottom:8}}>
+        <div style={{fontWeight:'bold'}}>Template <span style={{color:'#1976d2',fontWeight:'normal',fontSize:12}}>Applied</span></div>
+        <div>Name: REST Outbound Connector</div>
+        <div>Version: 10</div>
+        <div>Description: Invoke REST API</div>
+      </div>
+      {/* 认证 */}
+      <div style={{borderBottom:'1px solid #eee',marginBottom:8,paddingBottom:8}}>
+        <div style={{fontWeight:'bold'}}>Authentication</div>
+        <div>Type</div>
+        <select style={{width:'100%',marginBottom:4}} value="None" disabled>
+          <option>None</option>
+        </select>
+        <div style={{fontSize:12,color:'#888'}}>Choose the authentication type. Select 'None' if no authentication is necessary</div>
+      </div>
+      {/* HTTP端点 */}
+      <div style={{borderBottom:'1px solid #eee',marginBottom:8,paddingBottom:8}}>
+        <div style={{fontWeight:'bold'}}>HTTP endpoint</div>
+        <div>Method</div>
+        <select style={{width:'100%',marginBottom:4}} value="GET" disabled>
+          <option>GET</option>
+          <option>POST</option>
+          <option>PUT</option>
+          <option>DELETE</option>
+        </select>
+        <div>URL <span style={{color:'red'}}>*</span></div>
+        <input style={{width:'100%',marginBottom:4,borderColor:'red'}} value={''} placeholder="URL must not be empty." readOnly />
+        <div style={{fontSize:12,color:'red'}}>URL must not be empty.</div>
+      </div>
+      {/* Header等可扩展 */}
+    </div>
+  );
+}
 function App() {
-  const [nodes, setNodes] = useState(initialNodes);
-  const [edges, setEdges] = useState(initialEdges);
-  const [selected, setSelected] = useState(null);
-  const [showDetail, setShowDetail] = useState(false);
-  const [subNode, setSubNode] = useState(null);
-  const [polarionData, setPolarionData] = useState([]);
-  const [showBpmn, setShowBpmn] = useState(false);
+  // 状态：当前显示的主节点id（null为主流程）
+  const [showSubProcessOf, setShowSubProcessOf] = useState(null);
+  // 状态：当前选中的节点（主节点或子节点）
+  const [selectedNode, setSelectedNode] = useState(null);
 
-
-  const onNodesChange = useCallback(
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-  const onEdgesChange = useCallback(
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
-
-  const onNodeClick = (_e, node) => {
-    setSelected(node);
-    setSubNode(null);
-  };
-
-  const onNodeDoubleClick = (_e, node) => {
-    setSelected(node);
-    setShowDetail(true);
-
-  };
-
-  const toggleActive = (id) => {
-    setNodes((nds) =>
-      nds.map((n) =>
-        n.id === id ? { ...n, data: { ...n.data, active: !n.data.active } } : n
-      )
-    );
-    if (selected && selected.id === id) {
-      setSelected((s) => ({ ...s, data: { ...s.data, active: !s.data.active } }));
+  // 处理BPMN节点点击
+  const handleNodeClick = (element) => {
+    // element.id 可能是主节点id或子节点id
+    // 这里可扩展递归查找逻辑，当前仅兼容旧数据结构
+    if (!showSubProcessOf) {
+      // 主流程：点击主节点
+      const node = initialNodes.find(n => n.id === element.id);
+      if (node) setSelectedNode({ type: 'main', node });
+    } else {
+      // 子流程：点击子节点
+      const main = initialNodes.find(n => n.id === showSubProcessOf);
+      if (main) {
+        const sub = (main.data.subNodes || []).find(sn => sn.id === element.id);
+        if (sub) setSelectedNode({ type: 'sub', node: sub, main });
+      }
     }
   };
 
-  const toggleSubNode = (nodeId, subId) => {
-    setNodes((nds) =>
-      nds.map((n) => {
-        if (n.id !== nodeId) return n;
-        return {
-          ...n,
-          data: {
-            ...n.data,
-            subNodes: n.data.subNodes.map((sn) =>
-              sn.id === subId ? { ...sn, active: !sn.active } : sn
-            ),
-          },
-        };
-      })
-    );
-    if (selected && selected.id === nodeId) {
-      setSelected((s) => ({
-        ...s,
-        data: {
-          ...s.data,
-          subNodes: s.data.subNodes.map((sn) =>
-            sn.id === subId ? { ...sn, active: !sn.active } : sn
-          ),
-        },
-      }));
+  // 处理BPMN节点双击
+  const handleNodeDoubleClick = (element) => {
+    if (!showSubProcessOf) {
+      // 主流程：双击主节点，切换到子流程
+      const node = initialNodes.find(n => n.id === element.id);
+      if (node && node.data && node.data.subNodes) {
+        setShowSubProcessOf(node.id);
+        setSelectedNode(null);
+      }
+    } else {
+      // 子流程：双击无操作
     }
   };
 
-  const startFromNode = (node) => {
-    alert(`Start from ${node.data.label}`);
+  // 返回主流程
+  const handleBack = () => {
+    setShowSubProcessOf(null);
+    setSelectedNode(null);
   };
 
-  const loadPolarion = async () => {
-    const res = await fetch('/polarionSample.json');
-    const data = await res.json();
-    setPolarionData(data);
-  };
+  // 属性面板内容
+  let panelContent = <div style={{padding: 16, color: '#888'}}>请选择主节点或子节点</div>;
+  if (selectedNode) {
+    // 只针对“链接需求服务”节点特殊展示
+    // 1. BPMN serviceTask（主流程或子流程）
+    if (
+      selectedNode.type === 'bpmn:serviceTask' &&
+      (selectedNode.node.name === '链接需求服务' || selectedNode.node.id === 'Activity_1450w8g')
+    ) {
+      panelContent = <RestConnectorProperties element={selectedNode.node} />;
+    }
+    // 2. ReactFlow/自定义子节点（兼容旧数据结构）
+    else if (
+      selectedNode.type === 'sub' &&
+      (selectedNode.node.label === '链接需求服务' || selectedNode.node.id === 'link')
+    ) {
+      // 兼容旧子节点结构
+      panelContent = <RestConnectorProperties element={{
+        name: selectedNode.node.label,
+        id: selectedNode.node.id
+      }} />;
+    }
+    else if (selectedNode.type === 'main') {
+      const n = selectedNode.node;
+      panelContent = (
+        <div style={{padding: 16}}>
+          <h3>{n.data?.label || n.name}</h3>
+          <div>主节点ID: {n.id}</div>
+        </div>
+      );
+    } else if (selectedNode.type === 'sub') {
+      const sn = selectedNode.node;
+      panelContent = (
+        <div style={{padding: 16}}>
+          <h3>{sn.label || sn.name}</h3>
+          <div>子节点ID: {sn.id}</div>
+        </div>
+      );
+    }
+  }
 
   return (
-    <div className="container">
-      <div className="canvas">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
-          onNodeDoubleClick={onNodeDoubleClick}
-          fitView
-        >
-          <Background />
-          <Controls />
-          <MiniMap />
-        </ReactFlow>
-      </div>
-      <div className="sidebar">
-        {selected ? (
-          <div>
-            <h3>{selected.data.label}</h3>
-            <label className="checkbox">
-              <input
-                type="checkbox"
-                checked={selected.data.active}
-                onChange={() => toggleActive(selected.id)}
-              />
-              激活
-            </label>
-            <h4>子节点</h4>
-            {selected.data.subNodes.map((sn) => (
-              <label className="checkbox" key={sn.id}>
-                <input
-                  type="checkbox"
-                  checked={sn.active}
-                  onChange={() => toggleSubNode(selected.id, sn.id)}
-                />
-                {sn.label}
-                {sn.required ? ' (必选)' : ''}
-              </label>
-            ))}
-            <button onClick={() => setShowDetail(true)}>查看子节点视图</button>
-            <button onClick={() => startFromNode(selected)}>从此处开始执行</button>
-            <button onClick={() => setShowBpmn(true)}>BPMN编辑器</button>
-          </div>
-        ) : (
-          <div>选择一个节点查看详情</div>
-        )}
-
-        {subNode && (
-          <div className="subConfig">
-            <h4>子节点配置 - {subNode.label}</h4>
-            {subNode.tool && (
-              <p>
-                工具: {subNode.tool}{' '}
-                {subNode.url && (
-                  <a href={subNode.url} target="_blank" rel="noreferrer">
-                    打开
-                  </a>
-                )}
-              </p>
-            )}
-            {subNode.desc && <p>{subNode.desc}</p>}
-
-            {subNode.id === 'link' && (
-              <form className="polarion-form" onSubmit={(e) => e.preventDefault()}>
-                <label>
-                  URL
-                  <input type="text" defaultValue={subNode.url} />
-                </label>
-                <label>
-                  用户名
-                  <input type="text" />
-                </label>
-                <label>
-                  密码
-                  <input type="password" />
-                </label>
-                <button type="button" onClick={loadPolarion}>加载Polarion数据</button>
-
-                {polarionData.length > 0 && (
-                  <ul>
-                    {polarionData.map((r) => (
-                      <li key={r.id}>{r.id}: {r.title}</li>
-                    ))}
-                  </ul>
-                )}
-              </form>
-
-            )}
-          </div>
+    <div className="bpmn-camunda-layout">
+      {/* 工具栏 */}
+      <div className="bpmn-toolbar">
+        <span style={{ fontWeight: 'bold', fontSize: 18 }}>BPMN 工作流建模器</span>
+        {showSubProcessOf && (
+          <button style={{marginLeft: 24}} onClick={handleBack}>返回主流程</button>
         )}
       </div>
-      {showDetail && selected && (
-        <NodeDetail
-          node={selected}
-          onClose={() => setShowDetail(false)}
-          onSelectSub={(sn) => setSubNode(sn)}
-        />
-      )}
-
-      {showBpmn && (
-        <div className="detail-overlay">
-          <div className="detail-header">
-            <span>BPMN 编辑器</span>
-            <button onClick={() => setShowBpmn(false)}>关闭</button>
-          </div>
-          <BpmnModeler />
+      {/* 主区域 */}
+      <div className="bpmn-main-area">
+        {/* BPMN画布 */}
+        <div className="bpmn-canvas-area">
+          <BpmnModeler
+            showSubProcessOf={showSubProcessOf}
+            onNodeClick={handleNodeClick}
+            onNodeDoubleClick={handleNodeDoubleClick}
+          />
         </div>
-      )}
-
+        {/* 右侧属性面板 */}
+        <div className="bpmn-properties-panel">
+          {panelContent}
+        </div>
+      </div>
     </div>
   );
 }
