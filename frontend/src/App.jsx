@@ -10,6 +10,7 @@ import 'reactflow/dist/style.css';
 import { initialNodes, initialEdges } from './workflowData';
 import NodeDetail from './NodeDetail.jsx';
 import BpmnModeler from './BpmnModeler.jsx';
+
 import './App.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   const [subNode, setSubNode] = useState(null);
   const [polarionData, setPolarionData] = useState([]);
   const [showBpmn, setShowBpmn] = useState(false);
+
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -38,6 +40,7 @@ function App() {
   const onNodeDoubleClick = (_e, node) => {
     setSelected(node);
     setShowDetail(true);
+
   };
 
   const toggleActive = (id) => {
@@ -152,6 +155,7 @@ function App() {
               </p>
             )}
             {subNode.desc && <p>{subNode.desc}</p>}
+
             {subNode.id === 'link' && (
               <form className="polarion-form" onSubmit={(e) => e.preventDefault()}>
                 <label>
@@ -167,6 +171,7 @@ function App() {
                   <input type="password" />
                 </label>
                 <button type="button" onClick={loadPolarion}>加载Polarion数据</button>
+
                 {polarionData.length > 0 && (
                   <ul>
                     {polarionData.map((r) => (
@@ -175,6 +180,7 @@ function App() {
                   </ul>
                 )}
               </form>
+
             )}
           </div>
         )}
@@ -186,6 +192,7 @@ function App() {
           onSelectSub={(sn) => setSubNode(sn)}
         />
       )}
+
       {showBpmn && (
         <div className="detail-overlay">
           <div className="detail-header">
@@ -195,6 +202,7 @@ function App() {
           <BpmnModeler />
         </div>
       )}
+
     </div>
   );
 }
