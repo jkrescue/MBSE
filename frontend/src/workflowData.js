@@ -7,12 +7,52 @@ export const initialNodes = [
       active: true,
       status: 'pending',
       subNodes: [
-        { id: 'link', label: '链接需求服务', active: true, required: true },
-        { id: 'create', label: '需求创建', active: true, required: true },
-        { id: 'edit', label: '需求编辑', active: false, required: false },
-        { id: 'review', label: '需求评审', active: false, required: false },
-        { id: 'flow', label: '需求流转', active: false, required: false }
-      ]
+        {
+          id: 'link',
+          label: '链接需求服务',
+          active: true,
+          required: true,
+          config: {
+            tool: 'Polarion',
+            restApi: 'https://example.com/polarion/api/requirements',
+            link: 'https://example.com/polarion',
+          },
+        },
+        {
+          id: 'create',
+          label: '需求创建',
+          active: true,
+          required: true,
+          config: {},
+        },
+        {
+          id: 'edit',
+          label: '需求编辑',
+          active: false,
+          required: false,
+          config: {},
+        },
+        {
+          id: 'review',
+          label: '需求评审',
+          active: false,
+          required: false,
+          config: {},
+        },
+        {
+          id: 'flow',
+          label: '需求流转',
+          active: false,
+          required: false,
+          config: {},
+        },
+      ],
+      subEdges: [
+        { id: 's1', source: 'link', target: 'create' },
+        { id: 's2', source: 'create', target: 'edit' },
+        { id: 's3', source: 'edit', target: 'review' },
+        { id: 's4', source: 'review', target: 'flow' },
+      ],
     }
   },
   {
