@@ -1,9 +1,6 @@
 import React from 'react';
-import { Row, Col, Card, Table, Badge, Alert, List, Progress, Space, Button, Tag, Typography, Tooltip } from 'antd';
+import { Row, Col, Card, Table, List, Progress, Space, Button, Tag, Typography } from 'antd';
 import { 
-  CheckCircleOutlined, 
-  WarningOutlined,
-  CloseCircleOutlined,
   ReloadOutlined,
   DashboardOutlined,
   KeyOutlined,
@@ -12,7 +9,7 @@ import {
   TeamOutlined
 } from '@ant-design/icons';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 // 类型定义
 interface SimulationTool {
@@ -235,20 +232,16 @@ export const AdminDashboard: React.FC = () => {
                   key: 'resources',
                   render: (_, record: SimulationTool) => (
                     <Space direction="vertical" size="small">
-                      <Tooltip title="内存使用率">
-                        <Progress 
-                          percent={record.memory} 
-                          size="small" 
-                          status={record.memory > 80 ? "exception" : "normal"}
-                        />
-                      </Tooltip>
-                      <Tooltip title="CPU使用率">
-                        <Progress 
-                          percent={record.cpu} 
-                          size="small" 
-                          status={record.cpu > 80 ? "exception" : "normal"}
-                        />
-                      </Tooltip>
+                      <Progress 
+                        percent={record.memory} 
+                        size="small" 
+                        status={record.memory > 80 ? "exception" : "normal"}
+                      />
+                      <Progress 
+                        percent={record.cpu} 
+                        size="small" 
+                        status={record.cpu > 80 ? "exception" : "normal"}
+                      />
                     </Space>
                   )
                 },
@@ -452,4 +445,4 @@ export const AdminDashboard: React.FC = () => {
       </Row>
     </div>
   );
-}; 
+};

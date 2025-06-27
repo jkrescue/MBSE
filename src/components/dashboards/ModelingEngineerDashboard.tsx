@@ -1,9 +1,7 @@
 import React from 'react';
-import { Row, Col, Card, List, Tag, Button, Steps, Alert, Progress, Upload, Space, Table, Timeline, Tooltip } from 'antd';
+import { Row, Col, Card, List, Tag, Button, Steps, Progress, Space, Table, Timeline } from 'antd';
 import {
   EditOutlined,
-  CheckCircleOutlined,
-  WarningOutlined,
   PlusOutlined,
   MessageOutlined,
   UploadOutlined,
@@ -492,4 +490,4 @@ export const ModelingEngineerDashboard: React.FC = () => {
       </Row>
     </div>
   );
-}; 
+};
