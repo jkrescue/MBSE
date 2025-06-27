@@ -1,13 +1,12 @@
-
-
-
-
 import { useState } from 'react';
 import BpmnModeler from './BpmnModeler.jsx';
 import { initialNodes } from './workflowData';
 import './App.css';
+import WorkflowHome from './WorkflowHome.jsx';
+import './WorkflowHome.css';
+import closeIcon from './assets/close.png';
 
-// 针对“链接需求服务”节点的属性卡片
+// 针对"链接需求服务"节点的属性卡片
 function RestConnectorProperties({ element }) {
   // Camunda风格分组，字段更贴近真实属性
   const bo = element;
@@ -22,11 +21,11 @@ function RestConnectorProperties({ element }) {
       <div style={{padding: '16px 20px 8px 20px', borderBottom:'1px solid #eee'}}>
         <div style={{fontWeight:'bold',marginBottom:8}}>General</div>
         <div style={{marginBottom:6}}>
-          <div style={{fontSize:13, color:'#888'}}>Name</div>
+          <div style={{fontSize:13, color:'#222'}}>Name</div>
           <input style={{width:'100%',marginBottom:4}} value={bo.name||''} readOnly />
         </div>
         <div>
-          <div style={{fontSize:13, color:'#888'}}>ID</div>
+          <div style={{fontSize:13, color:'#222'}}>ID</div>
           <input style={{width:'100%'}} value={bo.id||''} readOnly />
         </div>
       </div>
@@ -40,25 +39,25 @@ function RestConnectorProperties({ element }) {
       {/* Authentication 分组 */}
       <div style={{padding: '16px 20px 8px 20px', borderBottom:'1px solid #eee'}}>
         <div style={{fontWeight:'bold',marginBottom:8}}>Authentication</div>
-        <div style={{fontSize:13, color:'#888'}}>Type</div>
+        <div style={{fontSize:13, color:'#222'}}>Type</div>
         <select style={{width:'100%',marginBottom:4}} value="None" disabled>
           <option>None</option>
         </select>
-        <div style={{fontSize:12,color:'#888'}}>Choose the authentication type. Select 'None' if no authentication is necessary</div>
+        <div style={{fontSize:12,color:'#222'}}>Choose the authentication type. Select 'None' if no authentication is necessary</div>
       </div>
       {/* HTTP endpoint 分组 */}
       <div style={{padding: '16px 20px 8px 20px', borderBottom:'1px solid #eee'}}>
         <div style={{fontWeight:'bold',marginBottom:8}}>HTTP endpoint</div>
-        <div style={{fontSize:13, color:'#888'}}>Method</div>
+        <div style={{fontSize:13, color:'#222'}}>Method</div>
         <select style={{width:'100%',marginBottom:4}} value={bo.method||'GET'} disabled>
           <option>GET</option>
           <option>POST</option>
           <option>PUT</option>
           <option>DELETE</option>
         </select>
-        <div style={{fontSize:13, color:'#888'}}>URL <span style={{color:'red'}}>*</span></div>
+        <div style={{fontSize:13, color:'#222'}}>URL <span style={{color:'red'}}>*</span></div>
         <input style={{width:'100%',marginBottom:4,borderColor:'#ccc'}} value={bo.url||''} placeholder="URL must not be empty." readOnly />
-        <div style={{fontSize:12,color:'#888'}}>URL must not be empty.</div>
+        <div style={{fontSize:12,color:'#222'}}>URL must not be empty.</div>
       </div>
       {/* Header/高级等分组可继续扩展 */}
     </div>
@@ -69,6 +68,8 @@ function App() {
   const [showSubProcessOf, setShowSubProcessOf] = useState(null);
   // 状态：当前选中的节点（主节点或子节点）
   const [selectedNode, setSelectedNode] = useState(null);
+  // 新增：控制BPMN建模器弹窗显示
+  const [showBpmnModal, setShowBpmnModal] = useState(false);
 
   // 处理BPMN节点点击，兼容 bpmn-js 业务对象
   const handleNodeClick = (element) => {
@@ -120,12 +121,12 @@ function App() {
   };
 
   // 属性面板内容
-  let panelContent = <div style={{padding: 16, color: '#888'}}>请选择主节点或子节点</div>;
+  let panelContent = <div style={{padding: 16, color: '#222'}}>请选择主节点或子节点</div>;
   if (selectedNode) {
     // 针对 BPMN 画布节点，按类型弹出不同配置卡片
     const bo = selectedNode.node;
     if (selectedNode.type === 'bpmn:serviceTask') {
-      // 针对“链接需求服务”节点展示专属配置，其它服务任务展示通用卡片
+      // 针对"链接需求服务"节点展示专属配置，其它服务任务展示通用卡片
       if (bo.name === '链接需求服务' || bo.id === 'Activity_1450w8g') {
         panelContent = <RestConnectorProperties element={bo} />;
       } else {
@@ -189,30 +190,45 @@ function App() {
     }
   }
 
+  // 新建工作流按钮回调
+  const handleCreateWorkflow = () => {
+    setShowBpmnModal(true);
+  };
+  // 关闭建模器弹窗
+  const handleCloseBpmnModal = () => {
+    setShowBpmnModal(false);
+    setShowSubProcessOf(null);
+    setSelectedNode(null);
+  };
+
+  // 首页内容
   return (
-    <div className="bpmn-camunda-layout">
-      {/* 工具栏 */}
-      <div className="bpmn-toolbar">
-        <span style={{ fontWeight: 'bold', fontSize: 18 }}>BPMN 工作流建模器</span>
-        {showSubProcessOf && (
-          <button style={{marginLeft: 24}} onClick={handleBack}>返回主流程</button>
-        )}
-      </div>
-      {/* 主区域 */}
-      <div className="bpmn-main-area">
-        {/* BPMN画布 */}
-        <div className="bpmn-canvas-area">
-          <BpmnModeler
-            showSubProcessOf={showSubProcessOf}
-            onNodeClick={handleNodeClick}
-            onNodeDoubleClick={handleNodeDoubleClick}
-          />
+    <div>
+      <WorkflowHome onCreateWorkflow={handleCreateWorkflow} />
+      {/* BPMN建模器弹窗 */}
+      {showBpmnModal && (
+        <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.25)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <div style={{background:'#fff',borderRadius:8,boxShadow:'0 4px 24px rgba(0,0,0,0.12)',padding:0,minWidth:1200,minHeight:700,position:'relative'}}>
+            {/* 右上角关闭按钮，悬浮于BPMN画布右上角 */}
+            <button style={{position:'absolute',top:18,right:32,zIndex:10,background:'#1976d2',border:'none',borderRadius:'50%',width:36,height:36,cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,0.08)',display:'flex',alignItems:'center',justifyContent:'center',padding:0}} onClick={handleCloseBpmnModal}>
+              <img src={closeIcon} alt="关闭" style={{width:20,height:20}} />
+            </button>
+            {/* 原有BPMN建模器区域 */}
+            <div className="bpmn-main-area" style={{height:'680px'}}>
+              <div className="bpmn-canvas-area">
+                <BpmnModeler
+                  showSubProcessOf={showSubProcessOf}
+                  onNodeClick={handleNodeClick}
+                  onNodeDoubleClick={handleNodeDoubleClick}
+                />
+              </div>
+              <div className="bpmn-properties-panel">
+                {panelContent}
+              </div>
+            </div>
+          </div>
         </div>
-        {/* 右侧属性面板 */}
-        <div className="bpmn-properties-panel">
-          {panelContent}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
