@@ -26,6 +26,8 @@ function BpmnModeler({ onNodeClick, onNodeDoubleClick }) {
     modeler.importXML(bpmnXml).then(() => {
       // 绑定事件
       modeler.on('element.click', (e) => {
+        // 调试：打印点击的 element
+        console.log('element.click', e.element);
         if (onNodeClick) onNodeClick(e.element);
       });
       modeler.on('element.dblclick', (e) => {
