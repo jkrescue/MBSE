@@ -3,7 +3,7 @@ export const initialNodes = [
     id: 'N1',
     position: { x: 0, y: 0 },
     data: {
-      label: '需求管理与同步',
+      label: '📋 需求管理与同步',
       active: true,
       subNodes: [
         { id: 'link', label: '链接需求服务', active: true, required: true, tool: 'Polarion', url: 'https://polarion.example.com', desc: '创建与Polarion或Doors的同步关系' },
@@ -24,7 +24,7 @@ export const initialNodes = [
     id: 'N2',
     position: { x: 250, y: 0 },
     data: {
-      label: '功能与架构设计',
+      label: '🛠 功能与架构设计',
       active: true,
       subNodes: [
         { id: 'sync', label: '同步需求', active: true, required: true, tool: 'EA' },
@@ -43,7 +43,7 @@ export const initialNodes = [
     id: 'N3',
     position: { x: 500, y: 0 },
     data: {
-      label: '系统集成和仿真',
+      label: '🧩 系统集成和仿真',
       active: true,
       subNodes: [
         { id: 'import', label: '系统架构录入', active: true, required: true },
@@ -76,7 +76,7 @@ export const initialNodes = [
     id: 'N4',
     position: { x: 750, y: 0 },
     data: {
-      label: '设计追溯',
+      label: '🔎 设计追溯',
       active: true,
       subNodes: [
         { id: 'trace', label: '建立追溯关系链', active: true, required: true },

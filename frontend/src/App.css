@@ -47,3 +47,21 @@
   padding-top: 10px;
   border-top: 1px solid #ccc;
 }
+
+
+.bpmn-canvas {
+  height: 500px;
+  border: 1px solid #ccc;
+  margin-top: 20px;
+}
+
+.polarion-form label {
+  display: block;
+  margin-bottom: 8px;
+}
+.polarion-form input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 2px;
+}
+

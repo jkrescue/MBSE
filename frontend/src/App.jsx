@@ -1,8 +1,16 @@
 import { useCallback, useState } from 'react';
-import ReactFlow, { Background, Controls, MiniMap, applyEdgeChanges, applyNodeChanges } from 'reactflow';
+import ReactFlow, {
+  Background,
+  Controls,
+  MiniMap,
+  applyEdgeChanges,
+  applyNodeChanges,
+} from 'reactflow';
 import 'reactflow/dist/style.css';
 import { initialNodes, initialEdges } from './workflowData';
 import NodeDetail from './NodeDetail.jsx';
+import BpmnModeler from './BpmnModeler.jsx';
+
 import './App.css';
 
 function App() {
@@ -12,6 +20,8 @@ function App() {
   const [showDetail, setShowDetail] = useState(false);
   const [subNode, setSubNode] = useState(null);
   const [polarionData, setPolarionData] = useState([]);
+  const [showBpmn, setShowBpmn] = useState(false);
+
 
   const onNodesChange = useCallback(
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
@@ -25,6 +35,12 @@ function App() {
   const onNodeClick = (_e, node) => {
     setSelected(node);
     setSubNode(null);
+  };
+
+  const onNodeDoubleClick = (_e, node) => {
+    setSelected(node);
+    setShowDetail(true);
+
   };
 
   const toggleActive = (id) => {
@@ -85,6 +101,7 @@ function App() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onNodeClick={onNodeClick}
+          onNodeDoubleClick={onNodeDoubleClick}
           fitView
         >
           <Background />
@@ -118,6 +135,7 @@ function App() {
             ))}
             <button onClick={() => setShowDetail(true)}>查看子节点视图</button>
             <button onClick={() => startFromNode(selected)}>从此处开始执行</button>
+            <button onClick={() => setShowBpmn(true)}>BPMN编辑器</button>
           </div>
         ) : (
           <div>选择一个节点查看详情</div>
@@ -137,9 +155,23 @@ function App() {
               </p>
             )}
             {subNode.desc && <p>{subNode.desc}</p>}
-            {subNode.tool === 'Polarion' && (
-              <div>
-                <button onClick={loadPolarion}>加载Polarion数据</button>
+
+            {subNode.id === 'link' && (
+              <form className="polarion-form" onSubmit={(e) => e.preventDefault()}>
+                <label>
+                  URL
+                  <input type="text" defaultValue={subNode.url} />
+                </label>
+                <label>
+                  用户名
+                  <input type="text" />
+                </label>
+                <label>
+                  密码
+                  <input type="password" />
+                </label>
+                <button type="button" onClick={loadPolarion}>加载Polarion数据</button>
+
                 {polarionData.length > 0 && (
                   <ul>
                     {polarionData.map((r) => (
@@ -147,7 +179,8 @@ function App() {
                     ))}
                   </ul>
                 )}
-              </div>
+              </form>
+
             )}
           </div>
         )}
@@ -159,6 +192,17 @@ function App() {
           onSelectSub={(sn) => setSubNode(sn)}
         />
       )}
+
+      {showBpmn && (
+        <div className="detail-overlay">
+          <div className="detail-header">
+            <span>BPMN 编辑器</span>
+            <button onClick={() => setShowBpmn(false)}>关闭</button>
+          </div>
+          <BpmnModeler />
+        </div>
+      )}
+
     </div>
   );
 }

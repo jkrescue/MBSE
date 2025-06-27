@@ -6,7 +6,9 @@ function NodeDetail({ node, onClose, onSelectSub }) {
   const [subNodes] = useState(
     node.data.subNodes.map((sn, idx) => ({
       id: sn.id,
-      position: { x: idx * 120, y: 0 },
+
+      position: { x: (idx % 3) * 150, y: Math.floor(idx / 3) * 100 },
+
       data: { label: sn.label, active: sn.active },
     }))
   );
