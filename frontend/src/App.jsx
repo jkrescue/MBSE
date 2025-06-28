@@ -70,6 +70,8 @@ function App() {
   const [selectedNode, setSelectedNode] = useState(null);
   // 新增：控制BPMN建模器弹窗显示
   const [showBpmnModal, setShowBpmnModal] = useState(false);
+  // 新增：保存新建工作流定义信息
+  const [workflowDef, setWorkflowDef] = useState(null);
 
   // 处理BPMN节点点击，兼容 bpmn-js 业务对象
   const handleNodeClick = (element) => {
@@ -191,7 +193,8 @@ function App() {
   }
 
   // 新建工作流按钮回调
-  const handleCreateWorkflow = () => {
+  const handleCreateWorkflow = (def) => {
+    setWorkflowDef(def || null);
     setShowBpmnModal(true);
   };
   // 关闭建模器弹窗
@@ -199,6 +202,7 @@ function App() {
     setShowBpmnModal(false);
     setShowSubProcessOf(null);
     setSelectedNode(null);
+    setWorkflowDef(null);
   };
 
   // 首页内容
@@ -209,11 +213,15 @@ function App() {
       {showBpmnModal && (
         <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.25)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
           <div style={{background:'#fff',borderRadius:8,boxShadow:'0 4px 24px rgba(0,0,0,0.12)',padding:0,minWidth:1200,minHeight:700,position:'relative'}}>
-            {/* 右上角关闭按钮，悬浮于BPMN画布右上角 */}
-            <button style={{position:'absolute',top:18,right:32,zIndex:10,background:'#1976d2',border:'none',borderRadius:'50%',width:36,height:36,cursor:'pointer',boxShadow:'0 2px 8px rgba(0,0,0,0.08)',display:'flex',alignItems:'center',justifyContent:'center',padding:0}} onClick={handleCloseBpmnModal}>
+            {/* 新建工作流定义信息提示 */}
+            {workflowDef && (
+              <div style={{background:'#e3f0ff',color:'#1976d2',fontWeight:500,padding:'8px 24px',borderRadius:'8px 8px 0 0',fontSize:16,marginBottom:8}}>
+                新建工作流：{workflowDef.name}（阶段：{workflowDef.stage}）
+              </div>
+            )}
+            <button style={{position:'absolute',top:18,right:32,zIndex:10,background:'none',border:'none',borderRadius:'50%',width:36,height:36,cursor:'pointer',boxShadow:'none',display:'flex',alignItems:'center',justifyContent:'center',padding:0}} onClick={handleCloseBpmnModal}>
               <img src={closeIcon} alt="关闭" style={{width:20,height:20}} />
             </button>
-            {/* 原有BPMN建模器区域 */}
             <div className="bpmn-main-area" style={{height:'680px'}}>
               <div className="bpmn-canvas-area">
                 <BpmnModeler
