@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './WorkflowHome.css';
 import logo from './assets/react.svg'; // 可替换为实际logo
 import createImg from './assets/createworkflow.png';
@@ -9,6 +9,42 @@ import { useNavigate, Link } from 'react-router-dom';
 import closeIcon from './assets/close.png';
 import { useLocation } from 'react-router-dom';
 import { workflowData } from './workflowData.js';
+
+// Toast通知系统
+const Toast = ({ message, type = 'info', onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`toast toast-${type}`}>
+      <div className="toast-icon">
+        {type === 'success' && '✅'}
+        {type === 'error' && '❌'}
+        {type === 'warning' && '⚠️'}
+        {type === 'info' && 'ℹ️'}
+      </div>
+      <div className="toast-message">{message}</div>
+      <button className="toast-close" onClick={onClose}>×</button>
+    </div>
+  );
+};
+
+const ToastContainer = ({ toasts, removeToast }) => (
+  <div className="toast-container">
+    {toasts.map(toast => (
+      <Toast
+        key={toast.id}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => removeToast(toast.id)}
+      />
+    ))}
+  </div>
+);
 
 // 快捷操作卡片数据
 const quickActions = [
@@ -212,7 +248,7 @@ const DEFAULT_WIDTHS = {
   name: 180,
   system: 120,
   stage: 120,
-  desc: 220,
+  desc: 280,
   status: 100,
   activity: 140,
   actions: 160
@@ -248,6 +284,24 @@ export default function WorkflowHome({ onCreateWorkflow }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [publishConfirm, setPublishConfirm] = useState({ show: false, workflow: null });
+  const [toasts, setToasts] = useState([]);
+  const [lastSearchTerm, setLastSearchTerm] = useState('');
+  const [moreActionsVisible, setMoreActionsVisible] = useState(null);
+  const [moreMenuVisible, setMoreMenuVisible] = useState({});
+  const [moreMenuPosition, setMoreMenuPosition] = useState({});
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, visible: false, text: '' });
+  const [forceUpdate, setForceUpdate] = useState(0); // 强制重新渲染
+
+  // Toast通知函数
+  const showToast = (message, type = 'info') => {
+    const id = Date.now() + Math.random();
+    const newToast = { id, message, type };
+    setToasts(prev => [...prev, newToast]);
+  };
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id));
+  };
 
   // 模板筛选
   const filteredTemplates = selectedTag === '全部'
@@ -264,19 +318,107 @@ export default function WorkflowHome({ onCreateWorkflow }) {
 
   // 操作按钮渲染
   const renderActions = (row) => (
-    <>
+    <div className="actions-container">
       <button className="action-btn edit">编辑</button>
       <button className="action-btn publish" onClick={() => handlePublish(row)}>发布</button>
-      <button className="action-btn copy">复制</button>
-      <button className="action-btn delete">删除</button>
-      <button className="action-btn view">查看</button>
-    </>
+      
+      {/* 更多操作下拉菜单 */}
+      <div className="more-actions-wrapper">
+        <button 
+          className="action-btn more"
+          onClick={(e) => {
+            e.stopPropagation();
+            const rect = e.target.getBoundingClientRect();
+            const dropdownWidth = 120;
+            const dropdownHeight = 120;
+            
+            // 计算最佳位置，避免超出视窗边界
+            let left = rect.right - dropdownWidth;
+            let top = rect.bottom + 5;
+            
+            // 如果右侧空间不足，向左调整
+            if (left + dropdownWidth > window.innerWidth) {
+              left = window.innerWidth - dropdownWidth - 10;
+            }
+            
+            // 如果底部空间不足，向上显示
+            if (top + dropdownHeight > window.innerHeight) {
+              top = rect.top - dropdownHeight - 5;
+            }
+            
+            // 确保不超出左边界
+            if (left < 10) {
+              left = 10;
+            }
+            
+            setMoreActionsVisible(moreActionsVisible === row.name ? null : {
+              name: row.name,
+              top: top,
+              left: left
+            });
+          }}
+        >
+          更多 ▼
+        </button>
+        {moreActionsVisible && moreActionsVisible.name === row.name && (
+          <div 
+            className="more-actions-dropdown-fixed"
+            style={{
+              top: moreActionsVisible.top,
+              left: moreActionsVisible.left
+            }}
+          >
+            <button className="more-action-item" onClick={() => handleCopy(row)}>
+              <span className="action-icon">📋</span> 复制
+            </button>
+            <button className="more-action-item" onClick={() => handleDelete(row)}>
+              <span className="action-icon">🗑️</span> 删除
+            </button>
+            <button className="more-action-item" onClick={() => handleView(row)}>
+              <span className="action-icon">👁️</span> 查看
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   );
+
+  // 点击外部关闭更多操作菜单
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.more-actions-wrapper')) {
+        setMoreActionsVisible(null);
+      }
+    };
+
+    if (moreActionsVisible) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [moreActionsVisible]);
+
+  // 更多操作处理函数
+  const handleCopy = (row) => {
+    showToast(`已复制工作流"${row.name}"`, 'success');
+    setMoreActionsVisible(null);
+  };
+
+  const handleDelete = (row) => {
+    if (confirm(`确定要删除工作流"${row.name}"吗？`)) {
+      showToast(`已删除工作流"${row.name}"`, 'success');
+      setMoreActionsVisible(null);
+    }
+  };
+
+  const handleView = (row) => {
+    showToast(`正在查看工作流"${row.name}"`, 'info');
+    setMoreActionsVisible(null);
+  };
 
   // 发布工作流
   const handlePublish = (row) => {
     if (row.status === '已发布') {
-      alert('该工作流已经发布过了！');
+      showToast('该工作流已经发布过了！', 'warning');
       return;
     }
     
@@ -302,7 +444,7 @@ export default function WorkflowHome({ onCreateWorkflow }) {
     setPublishConfirm({ show: false, workflow: null });
     
     // 显示成功提示
-    alert(`工作流"${workflow.name}"发布成功！`);
+    showToast(`工作流"${workflow.name}"发布成功！`, 'success');
   };
 
   const cancelPublish = () => {
@@ -353,8 +495,10 @@ export default function WorkflowHome({ onCreateWorkflow }) {
     let list = getFavoriteWorkflows();
     if (isFavorite(row)) {
       list = list.filter(item => item.name !== row.name);
+      showToast(`已取消收藏"${row.name}"`, 'info');
     } else {
       list = [{ name: row.name, system: row.system, stage: row.stage }, ...list].slice(0, 20);
+      showToast(`已收藏"${row.name}"`, 'success');
     }
     setFavoriteWorkflows(list);
     setFavoriteList(list);
@@ -362,31 +506,50 @@ export default function WorkflowHome({ onCreateWorkflow }) {
 
   // 拖拽事件
   const handleDragStart = (col, e) => {
+    console.log('拖拽开始:', col, e.clientX); // 调试信息
+    e.preventDefault();
     e.stopPropagation();
     setDragCol(col);
     setDragStartX(e.clientX);
     setDragStartWidth(colWidths[col]);
     document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
   };
-  const handleDrag = (e) => {
+  
+  const handleDrag = useCallback((e) => {
     if (!dragCol) return;
+    console.log('拖拽中:', dragCol, e.clientX); // 调试信息
+    e.preventDefault();
     const delta = e.clientX - dragStartX;
-    setColWidths(w => ({ ...w, [dragCol]: Math.max(60, dragStartWidth + delta) }));
-  };
-  const handleDragEnd = () => {
+    const newWidth = Math.max(60, dragStartWidth + delta);
+    console.log('新宽度:', newWidth); // 调试信息
+    console.log('当前colWidths:', colWidths); // 调试信息
+    setColWidths(prev => {
+      const newWidths = { ...prev, [dragCol]: newWidth };
+      console.log('更新后的colWidths:', newWidths); // 调试信息
+      return newWidths;
+    });
+    // 强制重新渲染
+    setForceUpdate(prev => prev + 1);
+  }, [dragCol, dragStartX, dragStartWidth, colWidths]);
+  
+  const handleDragEnd = useCallback(() => {
+    console.log('拖拽结束:', dragCol); // 调试信息
     setDragCol(null);
     document.body.style.cursor = '';
-  };
+    document.body.style.userSelect = '';
+  }, [dragCol]);
+  
   useEffect(() => {
     if (dragCol) {
-      window.addEventListener('mousemove', handleDrag);
-      window.addEventListener('mouseup', handleDragEnd);
+      document.addEventListener('mousemove', handleDrag);
+      document.addEventListener('mouseup', handleDragEnd);
       return () => {
-        window.removeEventListener('mousemove', handleDrag);
-        window.removeEventListener('mouseup', handleDragEnd);
+        document.removeEventListener('mousemove', handleDrag);
+        document.removeEventListener('mouseup', handleDragEnd);
       };
     }
-  }, [dragCol]);
+  }, [dragCol, handleDrag, handleDragEnd]);
 
   // 排序
   const handleSort = (col) => {
@@ -431,12 +594,14 @@ export default function WorkflowHome({ onCreateWorkflow }) {
     if (confirm(`确定要删除选中的 ${selectedRows.size} 个工作流吗？`)) {
       // 这里应该调用API删除
       console.log('批量删除:', Array.from(selectedRows).map(idx => sortedData[idx].name));
+      showToast(`成功删除 ${selectedRows.size} 个工作流`, 'success');
       setSelectedRows(new Set());
     }
   };
   const handleBatchPublish = () => {
     if (selectedRows.size === 0) return;
     console.log('批量发布:', Array.from(selectedRows).map(idx => sortedData[idx].name));
+    showToast(`成功发布 ${selectedRows.size} 个工作流`, 'success');
     setSelectedRows(new Set());
   };
   const handleBatchExport = () => {
@@ -449,6 +614,7 @@ export default function WorkflowHome({ onCreateWorkflow }) {
     a.download = `workflows_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast(`成功导出 ${selectedRows.size} 个工作流`, 'success');
   };
 
   // 搜索和分页
@@ -461,6 +627,52 @@ export default function WorkflowHome({ onCreateWorkflow }) {
   const startIdx = (currentPage - 1) * pageSize;
   const endIdx = startIdx + pageSize;
   const paginatedData = filteredBySearch.slice(startIdx, endIdx);
+
+  // 搜索反馈
+  useEffect(() => {
+    if (searchTerm.trim() && searchTerm !== lastSearchTerm) {
+      const resultCount = filteredBySearch.length;
+      if (resultCount === 0) {
+        showToast(`未找到包含"${searchTerm}"的工作流`, 'warning');
+      } else if (resultCount < sortedData.length) {
+        showToast(`找到 ${resultCount} 个包含"${searchTerm}"的工作流`, 'info');
+      }
+      setLastSearchTerm(searchTerm);
+    } else if (!searchTerm.trim() && lastSearchTerm) {
+      showToast('已清除搜索条件', 'info');
+      setLastSearchTerm('');
+    }
+  }, [searchTerm, filteredBySearch.length, sortedData.length, lastSearchTerm]);
+
+  // 工具提示处理
+  const handleCellMouseEnter = (e, text) => {
+    // 只对td本身判断溢出
+    let target = e.target;
+    // 如果是td内嵌span/div等，向上找td
+    while (target && target.nodeName !== 'TD') {
+      target = target.parentElement;
+    }
+    if (!text || !target || target.scrollWidth <= target.clientWidth) return;
+    const rect = target.getBoundingClientRect();
+    const tooltipWidth = Math.min(300, text.length * 8 + 24); // 估算工具提示宽度
+    const tooltipHeight = 40; // 估算工具提示高度
+    let x = rect.left + rect.width / 2;
+    let y = rect.top - tooltipHeight - 10;
+    if (x + tooltipWidth / 2 > window.innerWidth) {
+      x = window.innerWidth - tooltipWidth / 2 - 10;
+    }
+    if (x - tooltipWidth / 2 < 0) {
+      x = tooltipWidth / 2 + 10;
+    }
+    if (y < 0) {
+      y = rect.bottom + 10;
+    }
+    setTooltipPosition({ x, y, visible: true, text });
+  };
+
+  const handleCellMouseLeave = () => {
+    setTooltipPosition({ x: 0, y: 0, visible: false, text: '' });
+  };
 
   return (
     <div className="workflow-home">
@@ -590,7 +802,7 @@ export default function WorkflowHome({ onCreateWorkflow }) {
             </span>
           ))}
         </div>
-        <table className="workflow-table">
+        <table className="workflow-table" key={`table-${forceUpdate}`}>
           <thead>
             <tr>
               <th style={{ width: 50, minWidth: 50 }}>
@@ -605,20 +817,31 @@ export default function WorkflowHome({ onCreateWorkflow }) {
                   key={col.dataIndex}
                   style={{ width: colWidths[col.dataIndex], minWidth: 60, position: 'relative', userSelect: 'none' }}
                 >
-                  <span
-                    className={['sortable-th', sortState.field === col.dataIndex ? 'active' : ''].join(' ')}
-                    onClick={() => handleSort(col.dataIndex)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {col.title}
-                    {sortState.field === col.dataIndex && (
-                      <span className="sort-arrow">{sortState.order === 'asc' ? '▲' : '▼'}</span>
-                    )}
-                  </span>
-                  <span
-                    className="col-resizer"
-                    onMouseDown={e => handleDragStart(col.dataIndex, e)}
-                  />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                    <span
+                      className={['sortable-th', sortState.field === col.dataIndex ? 'active' : ''].join(' ')}
+                      onClick={() => handleSort(col.dataIndex)}
+                      style={{ cursor: 'pointer', flex: 1 }}
+                    >
+                      {col.title}
+                      {sortState.field === col.dataIndex && (
+                        <span className="sort-arrow">{sortState.order === 'asc' ? '▲' : '▼'}</span>
+                      )}
+                    </span>
+                    <div
+                      onMouseDown={e => handleDragStart(col.dataIndex, e)}
+                      style={{
+                        width: '4px',
+                        height: '100%',
+                        background: '#ccc',
+                        cursor: 'col-resize',
+                        marginLeft: '8px',
+                        position: 'absolute',
+                        right: '0px',
+                        top: '0px'
+                      }}
+                    />
+                  </div>
                 </th>
               ))}
             </tr>
@@ -634,9 +857,49 @@ export default function WorkflowHome({ onCreateWorkflow }) {
                   />
                 </td>
                 {columns.map(col => {
-                  if (col.dataIndex === 'name') return <td key={col.dataIndex} style={{ width: colWidths[col.dataIndex], minWidth: 60 }}>{renderName(row)}</td>;
+                  if (col.dataIndex === 'name') return (
+                    <td 
+                      key={col.dataIndex} 
+                      style={{ width: colWidths[col.dataIndex], minWidth: 60 }}
+                      onMouseEnter={(e) => handleCellMouseEnter(e, row[col.dataIndex])}
+                      onMouseLeave={handleCellMouseLeave}
+                    >
+                      {renderName(row)}
+                    </td>
+                  );
                   if (col.dataIndex === 'status') return <td key={col.dataIndex} style={{ width: colWidths[col.dataIndex], minWidth: 60 }}>{renderStatus(row.status)}</td>;
                   if (col.dataIndex === 'actions') return <td key={col.dataIndex} style={{ width: colWidths[col.dataIndex], minWidth: 60 }}>{renderActions(row)}</td>;
+                  if (col.dataIndex === 'desc') return (
+                    <td 
+                      key={col.dataIndex} 
+                      style={{ width: colWidths[col.dataIndex], minWidth: 60 }}
+                      onMouseEnter={(e) => handleCellMouseEnter(e, row[col.dataIndex])}
+                      onMouseLeave={handleCellMouseLeave}
+                    >
+                      {row[col.dataIndex]}
+                    </td>
+                  );
+                  if (col.dataIndex === 'activity') return (
+                    <td 
+                      key={col.dataIndex} 
+                      style={{ width: colWidths[col.dataIndex], minWidth: 60 }}
+                      onMouseEnter={(e) => handleCellMouseEnter(e, row[col.dataIndex])}
+                      onMouseLeave={handleCellMouseLeave}
+                    >
+                      {row[col.dataIndex]}
+                    </td>
+                  );
+                  // 为其他可能被缩略的列添加悬停预览
+                  if (col.dataIndex === 'system' || col.dataIndex === 'stage') return (
+                    <td 
+                      key={col.dataIndex} 
+                      style={{ width: colWidths[col.dataIndex], minWidth: 60 }}
+                      onMouseEnter={(e) => handleCellMouseEnter(e, row[col.dataIndex])}
+                      onMouseLeave={handleCellMouseLeave}
+                    >
+                      {row[col.dataIndex]}
+                    </td>
+                  );
                   return <td key={col.dataIndex} style={{ width: colWidths[col.dataIndex], minWidth: 60 }}>{row[col.dataIndex]}</td>;
                 })}
               </tr>
@@ -825,6 +1088,34 @@ export default function WorkflowHome({ onCreateWorkflow }) {
               >确认发布</button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Toast通知容器 */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      
+      {/* 工具提示 */}
+      {tooltipPosition.visible && (
+        <div
+          style={{
+            position: 'fixed',
+            left: tooltipPosition.x,
+            top: tooltipPosition.y,
+            transform: 'translateX(-50%)',
+            background: 'rgba(0, 0, 0, 0.9)',
+            color: 'white',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            fontSize: '14px',
+            zIndex: 10001,
+            pointerEvents: 'none',
+            maxWidth: '300px',
+            wordWrap: 'break-word',
+            whiteSpace: 'normal',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+          }}
+        >
+          {tooltipPosition.text}
         </div>
       )}
     </div>
