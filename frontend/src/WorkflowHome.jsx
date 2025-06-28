@@ -1,14 +1,203 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { workflowData } from './workflowData';
+import closeIcon from './assets/close.png';
+import templateIcon from './assets/template.png';
 import './WorkflowHome.css';
-import logo from './assets/react.svg'; // 可替换为实际logo
+import logo from './assets/react.svg';
 import createImg from './assets/createworkflow.png';
 import editImg from './assets/editworkflow.png';
 import publishImg from './assets/publishworkflow.png';
-import templateIcon from './assets/template.png'; // 你可以用任意模板icon
-import { useNavigate, Link } from 'react-router-dom';
-import closeIcon from './assets/close.png';
-import { useLocation } from 'react-router-dom';
-import { workflowData } from './workflowData.js';
+
+// 模板预览组件
+const TemplatePreview = ({ template, onClose }) => {
+  const [viewMode, setViewMode] = useState('swimlane'); // swimlane, tree, flow
+
+  if (!template || !template.structure) {
+    return null;
+  }
+
+  const { phases, connections } = template.structure;
+
+  // 泳道图视图
+  const SwimlaneView = () => (
+    <div className="swimlane-container">
+      {phases.map((phase, index) => (
+        <div key={phase.id} className="swimlane">
+          <div className="swimlane-header">
+            <h3>{phase.name}</h3>
+            <p>{phase.description}</p>
+          </div>
+          <div className="swimlane-content">
+            {phase.nodes.map((node) => (
+              <div 
+                key={node.id} 
+                className={`swimlane-node ${node.type} ${node.required ? 'required' : 'optional'}`}
+              >
+                <div className="node-icon">
+                  {node.type === 'input' && '📥'}
+                  {node.type === 'process' && '⚙️'}
+                  {node.type === 'review' && '👁️'}
+                  {node.type === 'test' && '🧪'}
+                  {node.type === 'config' && '⚙️'}
+                  {node.type === 'analysis' && '📊'}
+                </div>
+                <div className="node-content">
+                  <div className="node-name">{node.name}</div>
+                  <div className="node-required">
+                    {node.required ? '必填' : '可选'}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  // 树形视图
+  const TreeView = () => (
+    <div className="tree-container">
+      {phases.map((phase, phaseIndex) => (
+        <div key={phase.id} className="tree-phase">
+          <div className="tree-phase-header">
+            <div className="tree-phase-title">{phase.name}</div>
+            <div className="tree-phase-desc">{phase.description}</div>
+          </div>
+          <div className="tree-nodes">
+            {phase.nodes.map((node, nodeIndex) => (
+              <div key={node.id} className="tree-node-wrapper">
+                {nodeIndex > 0 && <div className="tree-connector"></div>}
+                <div className={`tree-node ${node.type} ${node.required ? 'required' : 'optional'}`}>
+                  <div className="tree-node-icon">
+                    {node.type === 'input' && '📥'}
+                    {node.type === 'process' && '⚙️'}
+                    {node.type === 'review' && '👁️'}
+                    {node.type === 'test' && '🧪'}
+                    {node.type === 'config' && '⚙️'}
+                    {node.type === 'analysis' && '📊'}
+                  </div>
+                  <div className="tree-node-info">
+                    <div className="tree-node-name">{node.name}</div>
+                    <div className="tree-node-type">{node.type}</div>
+                  </div>
+                  <div className="tree-node-status">
+                    {node.required ? '必填' : '可选'}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          {phaseIndex < phases.length - 1 && (
+            <div className="tree-phase-connector">
+              <div className="connector-line"></div>
+              <div className="connector-arrow">↓</div>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+
+  // 流程图视图
+  const FlowView = () => (
+    <div className="flow-container">
+      <div className="flow-phases">
+        {phases.map((phase, index) => (
+          <div key={phase.id} className="flow-phase">
+            <div className="flow-phase-header">
+              <div className="flow-phase-title">{phase.name}</div>
+              <div className="flow-phase-desc">{phase.description}</div>
+            </div>
+            <div className="flow-nodes">
+              {phase.nodes.map((node, nodeIndex) => (
+                <div key={node.id} className="flow-node-wrapper">
+                  <div className={`flow-node ${node.type} ${node.required ? 'required' : 'optional'}`}>
+                    <div className="flow-node-icon">
+                      {node.type === 'input' && '📥'}
+                      {node.type === 'process' && '⚙️'}
+                      {node.type === 'review' && '👁️'}
+                      {node.type === 'test' && '🧪'}
+                      {node.type === 'config' && '⚙️'}
+                      {node.type === 'analysis' && '📊'}
+                    </div>
+                    <div className="flow-node-name">{node.name}</div>
+                  </div>
+                  {nodeIndex < phase.nodes.length - 1 && (
+                    <div className="flow-node-arrow">→</div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {index < phases.length - 1 && (
+              <div className="flow-phase-arrow">↓</div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="modal-mask">
+      <div className="modal-content template-preview-modal">
+        <div className="modal-header">
+          <span style={{fontWeight:'bold',fontSize:18}}>模板预览 - {template.name}</span>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        
+        <div className="preview-controls">
+          <button 
+            className={`preview-btn ${viewMode === 'swimlane' ? 'active' : ''}`}
+            onClick={() => setViewMode('swimlane')}
+          >
+            🏊 泳道图
+          </button>
+          <button 
+            className={`preview-btn ${viewMode === 'tree' ? 'active' : ''}`}
+            onClick={() => setViewMode('tree')}
+          >
+            🌳 节点树
+          </button>
+          <button 
+            className={`preview-btn ${viewMode === 'flow' ? 'active' : ''}`}
+            onClick={() => setViewMode('flow')}
+          >
+            🔄 流程图
+          </button>
+        </div>
+
+        <div className="preview-content">
+          {viewMode === 'swimlane' && <SwimlaneView />}
+          {viewMode === 'tree' && <TreeView />}
+          {viewMode === 'flow' && <FlowView />}
+        </div>
+
+        <div className="preview-footer">
+          <div className="template-info">
+            <div><strong>模板ID：</strong>{template.templateId}</div>
+            <div><strong>适用阶段：</strong>{template.defaultPhaseList.join(' → ')}</div>
+            <div><strong>模型绑定：</strong>{template.defaultModelBinding.join('、')}</div>
+          </div>
+          <div className="preview-actions">
+            <button className="modal-template-btn" onClick={onClose}>关闭</button>
+            <button 
+              className="modal-template-btn"
+              style={{background: '#52c41a', color: 'white'}}
+              onClick={() => {
+                onClose();
+                // 这里可以触发使用模板的逻辑
+              }}
+            >
+              使用此模板
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Toast通知系统
 const Toast = ({ message, type = 'info', onClose }) => {
@@ -171,6 +360,44 @@ const templateList = [
     tags: ['通用'],
     defaultPhaseList: ['需求分析', '系统设计', '集成验证'],
     defaultModelBinding: ['需求模型', '设计模型'],
+    structure: {
+      phases: [
+        {
+          id: 'requirements',
+          name: '需求分析',
+          description: '收集和分析系统需求',
+          nodes: [
+            { id: 'req1', name: '需求收集', type: 'input', required: true },
+            { id: 'req2', name: '需求分析', type: 'process', required: true },
+            { id: 'req3', name: '需求确认', type: 'review', required: true }
+          ]
+        },
+        {
+          id: 'design',
+          name: '系统设计',
+          description: '基于需求进行系统设计',
+          nodes: [
+            { id: 'des1', name: '架构设计', type: 'process', required: true },
+            { id: 'des2', name: '详细设计', type: 'process', required: true },
+            { id: 'des3', name: '设计评审', type: 'review', required: false }
+          ]
+        },
+        {
+          id: 'verification',
+          name: '集成验证',
+          description: '系统集成和验证测试',
+          nodes: [
+            { id: 'ver1', name: '系统集成', type: 'process', required: true },
+            { id: 'ver2', name: '验证测试', type: 'test', required: true },
+            { id: 'ver3', name: '验收确认', type: 'review', required: true }
+          ]
+        }
+      ],
+      connections: [
+        { from: 'requirements', to: 'design' },
+        { from: 'design', to: 'verification' }
+      ]
+    }
   },
   {
     templateId: 'rflp',
@@ -179,6 +406,55 @@ const templateList = [
     tags: ['通用'],
     defaultPhaseList: ['需求', '功能', '逻辑', '物理'],
     defaultModelBinding: ['功能模型', '逻辑模型'],
+    structure: {
+      phases: [
+        {
+          id: 'requirements',
+          name: '需求阶段',
+          description: '明确产品需求和约束',
+          nodes: [
+            { id: 'req1', name: '需求定义', type: 'input', required: true },
+            { id: 'req2', name: '需求分析', type: 'process', required: true },
+            { id: 'req3', name: '需求验证', type: 'review', required: true }
+          ]
+        },
+        {
+          id: 'functional',
+          name: '功能阶段',
+          description: '定义系统功能架构',
+          nodes: [
+            { id: 'fun1', name: '功能分解', type: 'process', required: true },
+            { id: 'fun2', name: '功能分配', type: 'process', required: true },
+            { id: 'fun3', name: '功能验证', type: 'test', required: false }
+          ]
+        },
+        {
+          id: 'logical',
+          name: '逻辑阶段',
+          description: '设计逻辑架构和接口',
+          nodes: [
+            { id: 'log1', name: '逻辑设计', type: 'process', required: true },
+            { id: 'log2', name: '接口设计', type: 'process', required: true },
+            { id: 'log3', name: '逻辑验证', type: 'test', required: true }
+          ]
+        },
+        {
+          id: 'physical',
+          name: '物理阶段',
+          description: '实现物理架构和组件',
+          nodes: [
+            { id: 'phy1', name: '物理设计', type: 'process', required: true },
+            { id: 'phy2', name: '组件实现', type: 'process', required: true },
+            { id: 'phy3', name: '物理验证', type: 'test', required: true }
+          ]
+        }
+      ],
+      connections: [
+        { from: 'requirements', to: 'functional' },
+        { from: 'functional', to: 'logical' },
+        { from: 'logical', to: 'physical' }
+      ]
+    }
   },
   {
     templateId: 'ac_heat',
@@ -187,6 +463,45 @@ const templateList = [
     tags: ['业务'],
     defaultPhaseList: ['热负荷分析', '仿真建模', '测试验证'],
     defaultModelBinding: ['热管理模型'],
+    structure: {
+      phases: [
+        {
+          id: 'load_analysis',
+          name: '热负荷分析',
+          description: '分析整车热负荷需求',
+          nodes: [
+            { id: 'load1', name: '环境条件分析', type: 'input', required: true },
+            { id: 'load2', name: '热负荷计算', type: 'process', required: true },
+            { id: 'load3', name: '负荷分布分析', type: 'analysis', required: true }
+          ]
+        },
+        {
+          id: 'simulation',
+          name: '仿真建模',
+          description: '建立热管理仿真模型',
+          nodes: [
+            { id: 'sim1', name: '模型建立', type: 'process', required: true },
+            { id: 'sim2', name: '参数设置', type: 'config', required: true },
+            { id: 'sim3', name: '仿真运行', type: 'process', required: true },
+            { id: 'sim4', name: '结果分析', type: 'analysis', required: true }
+          ]
+        },
+        {
+          id: 'testing',
+          name: '测试验证',
+          description: '验证热管理性能',
+          nodes: [
+            { id: 'test1', name: '台架测试', type: 'test', required: true },
+            { id: 'test2', name: '整车测试', type: 'test', required: true },
+            { id: 'test3', name: '性能评估', type: 'review', required: true }
+          ]
+        }
+      ],
+      connections: [
+        { from: 'load_analysis', to: 'simulation' },
+        { from: 'simulation', to: 'testing' }
+      ]
+    }
   },
   {
     templateId: 'veh_perf',
@@ -195,6 +510,45 @@ const templateList = [
     tags: ['业务'],
     defaultPhaseList: ['性能需求', '仿真分析', '性能验证'],
     defaultModelBinding: ['性能模型'],
+    structure: {
+      phases: [
+        {
+          id: 'performance_req',
+          name: '性能需求',
+          description: '定义整车性能指标',
+          nodes: [
+            { id: 'perf1', name: '性能指标定义', type: 'input', required: true },
+            { id: 'perf2', name: '目标值设定', type: 'config', required: true },
+            { id: 'perf3', name: '需求确认', type: 'review', required: true }
+          ]
+        },
+        {
+          id: 'simulation_analysis',
+          name: '仿真分析',
+          description: '进行性能仿真分析',
+          nodes: [
+            { id: 'sim1', name: '模型构建', type: 'process', required: true },
+            { id: 'sim2', name: '工况设置', type: 'config', required: true },
+            { id: 'sim3', name: '仿真计算', type: 'process', required: true },
+            { id: 'sim4', name: '结果分析', type: 'analysis', required: true }
+          ]
+        },
+        {
+          id: 'performance_validation',
+          name: '性能验证',
+          description: '验证性能指标达成',
+          nodes: [
+            { id: 'val1', name: '台架验证', type: 'test', required: true },
+            { id: 'val2', name: '道路测试', type: 'test', required: true },
+            { id: 'val3', name: '性能评估', type: 'review', required: true }
+          ]
+        }
+      ],
+      connections: [
+        { from: 'performance_req', to: 'simulation_analysis' },
+        { from: 'simulation_analysis', to: 'performance_validation' }
+      ]
+    }
   },
 ];
 
@@ -266,7 +620,7 @@ export default function WorkflowHome({ onCreateWorkflow }) {
   const [workflowDefForm, setWorkflowDefForm] = useState({
     name: '',
     desc: '',
-    stage: phaseList[1]
+    stage: phaseList.filter(p => p !== '全部')[0] || ''
   });
   const [recentVisible, setRecentVisible] = useState(false);
   const [recentList, setRecentList] = useState(getRecentWorkflows());
@@ -289,8 +643,13 @@ export default function WorkflowHome({ onCreateWorkflow }) {
   const [moreActionsVisible, setMoreActionsVisible] = useState(null);
   const [moreMenuVisible, setMoreMenuVisible] = useState({});
   const [moreMenuPosition, setMoreMenuPosition] = useState({});
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, visible: false, text: '' });
+  const [tooltipPosition, setTooltipPosition] = useState({ visible: false, x: 0, y: 0, text: '' });
   const [forceUpdate, setForceUpdate] = useState(0); // 强制重新渲染
+  const [formErrors, setFormErrors] = useState({});
+  const [formTouched, setFormTouched] = useState({});
+  const [showFormGuide, setShowFormGuide] = useState(false);
+  const [showTemplatePreview, setShowTemplatePreview] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState(null);
 
   // Toast通知函数
   const showToast = (message, type = 'info') => {
@@ -482,7 +841,7 @@ export default function WorkflowHome({ onCreateWorkflow }) {
   // 新建工作流按钮回调
   const handleCreateWorkflow = () => {
     setShowWorkflowDefModal(true);
-    setWorkflowDefForm({ name: '', desc: '', stage: phaseList[1] });
+    setWorkflowDefForm({ name: '', desc: '', stage: phaseList.filter(p => p !== '全部')[0] || '' });
   };
   // 关闭建模器弹窗
   const handleCloseBpmnModal = () => {
@@ -672,6 +1031,93 @@ export default function WorkflowHome({ onCreateWorkflow }) {
 
   const handleCellMouseLeave = () => {
     setTooltipPosition({ x: 0, y: 0, visible: false, text: '' });
+  };
+
+  // 表单校验规则
+  const validationRules = {
+    name: {
+      required: true,
+      minLength: 2,
+      maxLength: 50,
+      pattern: /^[a-zA-Z0-9\u4e00-\u9fa5_-]+$/
+    },
+    desc: {
+      required: true,
+      minLength: 10,
+      maxLength: 200
+    },
+    stage: {
+      required: true
+    }
+  };
+
+  // 校验单个字段
+  const validateField = (field, value) => {
+    const rules = validationRules[field];
+    if (!rules) return '';
+
+    if (rules.required && !value.trim()) {
+      return '此字段为必填项';
+    }
+
+    if (value.trim()) {
+      if (rules.minLength && value.length < rules.minLength) {
+        return `最少需要${rules.minLength}个字符`;
+      }
+      if (rules.maxLength && value.length > rules.maxLength) {
+        return `最多允许${rules.maxLength}个字符`;
+      }
+      if (rules.pattern && !rules.pattern.test(value)) {
+        if (field === 'name') {
+          return '名称只能包含中文、英文、数字、下划线和连字符';
+        }
+      }
+    }
+
+    return '';
+  };
+
+  // 实时校验
+  const handleFieldChange = (field, value) => {
+    setWorkflowDefForm(f => ({...f, [field]: value}));
+    
+    // 如果字段已被触摸过，进行实时校验
+    if (formTouched[field]) {
+      const error = validateField(field, value);
+      setFormErrors(prev => ({...prev, [field]: error}));
+    }
+  };
+
+  // 字段失焦时校验
+  const handleFieldBlur = (field) => {
+    setFormTouched(prev => ({...prev, [field]: true}));
+    const value = workflowDefForm[field];
+    const error = validateField(field, value);
+    setFormErrors(prev => ({...prev, [field]: error}));
+  };
+
+  // 提交前校验
+  const validateForm = () => {
+    const errors = {};
+    Object.keys(validationRules).forEach(field => {
+      const value = workflowDefForm[field];
+      const error = validateField(field, value);
+      if (error) {
+        errors[field] = error;
+      }
+    });
+    
+    setFormErrors(errors);
+    setFormTouched(Object.keys(validationRules).reduce((acc, field) => ({...acc, [field]: true}), {}));
+    
+    return Object.keys(errors).length === 0;
+  };
+
+  // 重置表单状态
+  const resetFormState = () => {
+    setFormErrors({});
+    setFormTouched({});
+    setShowFormGuide(false);
   };
 
   return (
@@ -978,11 +1424,27 @@ export default function WorkflowHome({ onCreateWorkflow }) {
                   </div>
                   <div className="modal-template-phases">阶段：{tpl.defaultPhaseList.join(' / ')}</div>
                   <div className="modal-template-models">模型绑定：{tpl.defaultModelBinding.join('、')}</div>
-                  <button className="modal-template-btn" onClick={() => {
-                    setShowTemplateModal(false);
-                    setSelectedTemplate(tpl);
-                    setShowBpmnModal(true);
-                  }}>使用该模板</button>
+                  <div className="modal-template-actions">
+                    <button 
+                      className="modal-template-btn preview-btn"
+                      onClick={() => {
+                        setPreviewTemplate(tpl);
+                        setShowTemplatePreview(true);
+                      }}
+                    >
+                      👁️ 预览
+                    </button>
+                    <button 
+                      className="modal-template-btn"
+                      onClick={() => {
+                        setShowTemplateModal(false);
+                        setSelectedTemplate(tpl);
+                        setShowBpmnModal(true);
+                      }}
+                    >
+                      使用该模板
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -1008,46 +1470,114 @@ export default function WorkflowHome({ onCreateWorkflow }) {
           <div className="modal-content" style={{minWidth: 420, maxWidth: 480}}>
             <div className="modal-header">
               <span style={{fontWeight:'bold',fontSize:18}}>新建工作流</span>
-              <button className="modal-close" onClick={() => setShowWorkflowDefModal(false)}>×</button>
+              <button className="modal-close" onClick={() => {
+                setShowWorkflowDefModal(false);
+                resetFormState();
+              }}>×</button>
             </div>
+            
+            {/* 表单引导信息 */}
+            <button 
+              className="form-guide-toggle"
+              onClick={() => setShowFormGuide(!showFormGuide)}
+            >
+              {showFormGuide ? '隐藏填写指南' : '显示填写指南'}
+            </button>
+            
+            {showFormGuide && (
+              <div className="form-guide">
+                <h4>📝 填写指南</h4>
+                <ul>
+                  <li><strong>工作流名称：</strong>2-50个字符，支持中文、英文、数字、下划线和连字符</li>
+                  <li><strong>工作流描述：</strong>10-200个字符，详细描述工作流的功能和用途</li>
+                  <li><strong>工作流阶段：</strong>选择工作流所属的业务阶段</li>
+                </ul>
+              </div>
+            )}
+
+            {/* 表单验证状态 */}
+            {Object.keys(formTouched).length > 0 && (
+              <div className={`form-status ${Object.keys(formErrors).length === 0 ? 'valid' : 'invalid'}`}>
+                <div className="form-status-icon">
+                  {Object.keys(formErrors).length === 0 ? '✓' : '✗'}
+                </div>
+                <span>
+                  {Object.keys(formErrors).length === 0 
+                    ? '表单填写正确，可以提交' 
+                    : `还有 ${Object.keys(formErrors).length} 个字段需要修正`
+                  }
+                </span>
+              </div>
+            )}
+
             <div className="modal-form-row">
-              <label>工作流名称</label>
+              <label>工作流名称 <span style={{color: '#ff4d4f'}}>*</span></label>
               <input
                 value={workflowDefForm.name}
-                onChange={e => setWorkflowDefForm(f => ({...f, name: e.target.value}))}
+                onChange={e => handleFieldChange('name', e.target.value)}
+                onBlur={() => handleFieldBlur('name')}
                 placeholder="请输入工作流名称"
+                className={`${formTouched.name ? (formErrors.name ? 'form-field-invalid' : 'form-field-valid') : ''}`}
               />
+              {formTouched.name && formErrors.name && <div className="form-error">{formErrors.name}</div>}
+              {formTouched.name && !formErrors.name && <div className="form-field-hint">✓ 名称格式正确</div>}
+              <div className={`char-count ${workflowDefForm.name.length > 40 ? 'warning' : ''} ${workflowDefForm.name.length > 50 ? 'error' : ''}`}>
+                {workflowDefForm.name.length}/50
+              </div>
             </div>
+            
             <div className="modal-form-row">
-              <label>工作流信息</label>
+              <label>工作流信息 <span style={{color: '#ff4d4f'}}>*</span></label>
               <textarea
                 value={workflowDefForm.desc}
-                onChange={e => setWorkflowDefForm(f => ({...f, desc: e.target.value}))}
+                onChange={e => handleFieldChange('desc', e.target.value)}
+                onBlur={() => handleFieldBlur('desc')}
                 placeholder="请输入工作流描述"
+                className={`${formTouched.desc ? (formErrors.desc ? 'form-field-invalid' : 'form-field-valid') : ''}`}
               />
+              {formTouched.desc && formErrors.desc && <div className="form-error">{formErrors.desc}</div>}
+              {formTouched.desc && !formErrors.desc && <div className="form-field-hint">✓ 描述格式正确</div>}
+              <div className={`char-count ${workflowDefForm.desc.length > 150 ? 'warning' : ''} ${workflowDefForm.desc.length > 200 ? 'error' : ''}`}>
+                {workflowDefForm.desc.length}/200
+              </div>
             </div>
+            
             <div className="modal-form-row">
-              <label>工作流阶段</label>
+              <label>工作流阶段 <span style={{color: '#ff4d4f'}}>*</span></label>
               <select
                 value={workflowDefForm.stage}
-                onChange={e => setWorkflowDefForm(f => ({...f, stage: e.target.value}))}
+                onChange={e => handleFieldChange('stage', e.target.value)}
+                onBlur={() => handleFieldBlur('stage')}
+                className={`${formTouched.stage ? (formErrors.stage ? 'form-field-invalid' : 'form-field-valid') : ''}`}
               >
+                <option value="">请选择工作流阶段</option>
                 {phaseList.filter(p => p !== '全部').map(phase => (
                   <option key={phase} value={phase}>{phase}</option>
                 ))}
               </select>
+              {formTouched.stage && formErrors.stage && <div className="form-error">{formErrors.stage}</div>}
+              {formTouched.stage && !formErrors.stage && <div className="form-field-hint">✓ 阶段选择正确</div>}
             </div>
+            
             <div style={{marginTop: 24, textAlign: 'right'}}>
-              <button className="modal-template-btn" style={{marginRight: 12}} onClick={() => setShowWorkflowDefModal(false)}>取消</button>
+              <button className="modal-template-btn" style={{marginRight: 12}} onClick={() => {
+                setShowWorkflowDefModal(false);
+                resetFormState();
+              }}>取消</button>
               <button
                 className="modal-template-btn"
                 onClick={() => {
-                  setShowWorkflowDefModal(false);
-                  setShowBpmnModal(false);
-                  setSelectedTemplate(null);
-                  onCreateWorkflow(workflowDefForm);
+                  if (validateForm()) {
+                    setShowWorkflowDefModal(false);
+                    setShowBpmnModal(false);
+                    setSelectedTemplate(null);
+                    resetFormState();
+                    onCreateWorkflow(workflowDefForm);
+                  } else {
+                    showToast('请检查表单填写是否正确', 'error');
+                  }
                 }}
-                disabled={!workflowDefForm.name.trim()}
+                disabled={!workflowDefForm.name.trim() || !workflowDefForm.desc.trim() || !workflowDefForm.stage}
               >确认</button>
             </div>
           </div>
@@ -1093,6 +1623,17 @@ export default function WorkflowHome({ onCreateWorkflow }) {
 
       {/* Toast通知容器 */}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
+      
+      {/* 模板预览弹窗 */}
+      {showTemplatePreview && previewTemplate && (
+        <TemplatePreview 
+          template={previewTemplate}
+          onClose={() => {
+            setShowTemplatePreview(false);
+            setPreviewTemplate(null);
+          }}
+        />
+      )}
       
       {/* 工具提示 */}
       {tooltipPosition.visible && (
