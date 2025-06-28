@@ -24,14 +24,14 @@ const GuideSteps = () => (
         <div className="guide-arrow">→</div>
         <div className="guide-step">
           <img src={editImg} alt="编辑" className="step-img" />
-          <div className="step-title">设计流程</div>
-          <div className="step-desc">在弹出的建模器中拖拽节点，配置流程逻辑</div>
+          <div className="step-title">设计工作流</div>
+          <div className="step-desc">在弹出的建模器中拖拽节点，配置工作流逻辑</div>
         </div>
         <div className="guide-arrow">→</div>
         <div className="guide-step">
           <img src={publishImg} alt="发布" className="step-img" />
-          <div className="step-title">发布流程</div>
-          <div className="step-desc">流程设计完成后可一键发布，正式投入使用</div>
+          <div className="step-title">发布工作流</div>
+          <div className="step-desc">工作流设计完成后可一键发布，正式投入使用</div>
         </div>
       </div>
     </div>
