@@ -8,10 +8,28 @@ import closeIcon from './assets/close.png';
 
 // 针对"链接需求服务"节点的属性卡片
 function RestConnectorProperties({ element }) {
+  const [isLinking, setIsLinking] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  
   // Camunda风格分组，字段更贴近真实属性
   const bo = element;
+  
+  // 处理链接按钮点击
+  const handleLinkClick = () => {
+    setIsLinking(true);
+    // 模拟链接过程
+    setTimeout(() => {
+      setIsLinking(false);
+      setShowSuccess(true);
+      // 3秒后隐藏成功提示
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 3000);
+    }, 1500);
+  };
+
   return (
-    <div style={{padding: 0, fontFamily: 'Inter, Arial, sans-serif', fontSize: 14, background: '#fff'}}>
+    <div style={{padding: 0, fontFamily: 'Inter, Arial, sans-serif', fontSize: 14, background: '#fff', position: 'relative'}}>
       {/* 标题栏 */}
       <div style={{padding: '16px 20px 8px 20px', borderBottom: '1px solid #eee', background: '#f7f8fa'}}>
         <div style={{fontWeight:'bold',fontSize:17,marginBottom:2}}>REST Outbound Connector</div>
@@ -59,10 +77,652 @@ function RestConnectorProperties({ element }) {
         <input style={{width:'100%',marginBottom:4,borderColor:'#ccc'}} value={bo.url||''} placeholder="URL must not be empty." readOnly />
         <div style={{fontSize:12,color:'#222'}}>URL must not be empty.</div>
       </div>
-      {/* Header/高级等分组可继续扩展 */}
+      
+      {/* 链接按钮区域 */}
+      <div style={{padding: '16px 20px', borderTop: '1px solid #eee', background: '#fafafa'}}>
+        <button
+          onClick={handleLinkClick}
+          disabled={isLinking}
+          style={{
+            background: isLinking ? '#ccc' : '#1890ff',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: isLinking ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            fontWeight: '500',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          {isLinking ? (
+            <>
+              <div style={{
+                width: '12px',
+                height: '12px',
+                border: '2px solid #fff',
+                borderTop: '2px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite'
+              }}></div>
+              链接中...
+            </>
+          ) : (
+            '链接'
+          )}
+        </button>
+      </div>
+      
+      {/* 成功提示 */}
+      {showSuccess && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          background: '#52c41a',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          animation: 'slideIn 0.3s ease'
+        }}>
+          <span style={{fontSize: '16px'}}>✓</span>
+          <span>链接成功</span>
+        </div>
+      )}
+      
+      {/* 添加CSS动画 */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
+
+// 需求创建节点配置组件
+function RequirementCreationProperties({ element }) {
+  const [activeTab, setActiveTab] = useState('import'); // 'import' | 'create'
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showPolarionModal, setShowPolarionModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [newRequirement, setNewRequirement] = useState({
+    title: '',
+    description: '',
+    priority: 'medium',
+    type: 'functional',
+    assignee: ''
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // 模拟Polarion工作项数据
+  const polarionItems = [
+    {
+      id: 'REQ-001',
+      title: '系统应支持用户登录功能',
+      type: 'Functional',
+      priority: 'High',
+      status: 'In Progress',
+      assignee: '张三',
+      created: '2024-01-15',
+      description: '用户应能够通过用户名和密码登录系统，系统应验证用户身份并授予相应权限。'
+    },
+    {
+      id: 'REQ-002',
+      title: '系统应支持数据导出功能',
+      type: 'Functional',
+      priority: 'Medium',
+      status: 'Open',
+      assignee: '李四',
+      created: '2024-01-16',
+      description: '用户应能够将系统中的数据导出为Excel、PDF等格式。'
+    },
+    {
+      id: 'REQ-003',
+      title: '系统响应时间应小于2秒',
+      type: 'Non-Functional',
+      priority: 'High',
+      status: 'In Review',
+      assignee: '王五',
+      created: '2024-01-17',
+      description: '系统的主要功能响应时间应控制在2秒以内，确保良好的用户体验。'
+    },
+    {
+      id: 'REQ-004',
+      title: '系统应支持多语言',
+      type: 'Functional',
+      priority: 'Low',
+      status: 'Open',
+      assignee: '赵六',
+      created: '2024-01-18',
+      description: '系统界面应支持中文、英文等多种语言切换。'
+    },
+    {
+      id: 'REQ-005',
+      title: '系统应支持数据备份',
+      type: 'Functional',
+      priority: 'High',
+      status: 'In Progress',
+      assignee: '钱七',
+      created: '2024-01-19',
+      description: '系统应提供自动和手动数据备份功能，确保数据安全。'
+    }
+  ];
+
+  // 过滤工作项
+  const filteredItems = polarionItems.filter(item =>
+    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // 处理选择工作项
+  const handleSelectItem = (item) => {
+    if (selectedItems.find(selected => selected.id === item.id)) {
+      setSelectedItems(selectedItems.filter(selected => selected.id !== item.id));
+    } else {
+      setSelectedItems([...selectedItems, item]);
+    }
+  };
+
+  // 处理载入按钮
+  const handleLoadItems = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowSuccess(true);
+      setShowPolarionModal(false);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 1500);
+  };
+
+  // 处理新建需求
+  const handleCreateRequirement = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowSuccess(true);
+      setShowCreateModal(false);
+      setTimeout(() => setShowSuccess(false), 3000);
+    }, 1500);
+  };
+
+  // 处理在Polarion中打开
+  const handleOpenInPolarion = () => {
+    setShowPolarionModal(true);
+  };
+
+  return (
+    <div style={{padding: 0, fontFamily: 'Inter, Arial, sans-serif', fontSize: 14, background: '#fff', position: 'relative'}}>
+      {/* 标题栏 */}
+      <div style={{padding: '16px 20px 8px 20px', borderBottom: '1px solid #eee', background: '#f7f8fa'}}>
+        <div style={{fontWeight:'bold',fontSize:17,marginBottom:2}}>需求创建</div>
+        <div style={{color:'#888',fontSize:13}}>{element.name || '需求创建'}</div>
+      </div>
+
+      {/* 选项卡 */}
+      <div style={{display: 'flex', borderBottom: '1px solid #eee'}}>
+        <button
+          onClick={() => setActiveTab('import')}
+          style={{
+            flex: 1,
+            padding: '12px 16px',
+            border: 'none',
+            background: activeTab === 'import' ? '#1890ff' : '#f5f5f5',
+            color: activeTab === 'import' ? 'white' : '#666',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}
+        >
+          📥 从Polarion导入
+        </button>
+        <button
+          onClick={() => setActiveTab('create')}
+          style={{
+            flex: 1,
+            padding: '12px 16px',
+            border: 'none',
+            background: activeTab === 'create' ? '#1890ff' : '#f5f5f5',
+            color: activeTab === 'create' ? 'white' : '#666',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}
+        >
+          ✏️ 在线新建
+        </button>
+      </div>
+
+      {/* 内容区域 */}
+      <div style={{padding: '16px 20px'}}>
+        {activeTab === 'import' ? (
+          <div>
+            <div style={{marginBottom: '16px'}}>
+              <input
+                type="text"
+                placeholder="搜索需求..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  border: '1px solid #d9d9d9',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+            
+            <div style={{marginBottom: '16px'}}>
+              <div style={{fontSize: '12px', color: '#666', marginBottom: '8px'}}>
+                已选择 {selectedItems.length} 项
+              </div>
+              <div style={{maxHeight: '300px', overflowY: 'auto', border: '1px solid #e8e8e8', borderRadius: '4px'}}>
+                {filteredItems.map(item => (
+                  <div
+                    key={item.id}
+                    onClick={() => handleSelectItem(item)}
+                    style={{
+                      padding: '12px',
+                      borderBottom: '1px solid #f0f0f0',
+                      cursor: 'pointer',
+                      background: selectedItems.find(selected => selected.id === item.id) ? '#e6f7ff' : 'white',
+                      transition: 'background 0.2s'
+                    }}
+                  >
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '4px'}}>
+                      <div style={{fontWeight: '500', fontSize: '13px', color: '#1890ff'}}>{item.id}</div>
+                      <div style={{
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        fontSize: '11px',
+                        background: item.priority === 'High' ? '#ff4d4f' : item.priority === 'Medium' ? '#faad14' : '#52c41a',
+                        color: 'white'
+                      }}>
+                        {item.priority}
+                      </div>
+                    </div>
+                    <div style={{fontSize: '13px', fontWeight: '500', marginBottom: '4px'}}>{item.title}</div>
+                    <div style={{fontSize: '12px', color: '#666', marginBottom: '4px'}}>{item.description}</div>
+                    <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#999'}}>
+                      <span>类型: {item.type}</span>
+                      <span>状态: {item.status}</span>
+                      <span>负责人: {item.assignee}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div style={{display: 'flex', gap: '8px'}}>
+              <button
+                onClick={handleLoadItems}
+                disabled={selectedItems.length === 0 || isLoading}
+                style={{
+                  background: selectedItems.length === 0 || isLoading ? '#ccc' : '#52c41a',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: selectedItems.length === 0 || isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      border: '2px solid #fff',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    载入中...
+                  </>
+                ) : (
+                  '载入选中项'
+                )}
+              </button>
+              <button
+                onClick={handleOpenInPolarion}
+                style={{
+                  background: '#1890ff',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                在Polarion中打开
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div style={{marginBottom: '16px'}}>
+              <div style={{marginBottom: '8px'}}>
+                <label style={{fontSize: '13px', color: '#222', fontWeight: '500'}}>需求标题 *</label>
+                <input
+                  type="text"
+                  value={newRequirement.title}
+                  onChange={(e) => setNewRequirement({...newRequirement, title: e.target.value})}
+                  placeholder="请输入需求标题"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    marginTop: '4px'
+                  }}
+                />
+              </div>
+              
+              <div style={{marginBottom: '8px'}}>
+                <label style={{fontSize: '13px', color: '#222', fontWeight: '500'}}>需求描述 *</label>
+                <textarea
+                  value={newRequirement.description}
+                  onChange={(e) => setNewRequirement({...newRequirement, description: e.target.value})}
+                  placeholder="请详细描述需求内容"
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    marginTop: '4px',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+              
+              <div style={{display: 'flex', gap: '12px', marginBottom: '8px'}}>
+                <div style={{flex: 1}}>
+                  <label style={{fontSize: '13px', color: '#222', fontWeight: '500'}}>优先级</label>
+                  <select
+                    value={newRequirement.priority}
+                    onChange={(e) => setNewRequirement({...newRequirement, priority: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '1px solid #d9d9d9',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      marginTop: '4px'
+                    }}
+                  >
+                    <option value="low">低</option>
+                    <option value="medium">中</option>
+                    <option value="high">高</option>
+                  </select>
+                </div>
+                <div style={{flex: 1}}>
+                  <label style={{fontSize: '13px', color: '#222', fontWeight: '500'}}>需求类型</label>
+                  <select
+                    value={newRequirement.type}
+                    onChange={(e) => setNewRequirement({...newRequirement, type: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      border: '1px solid #d9d9d9',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      marginTop: '4px'
+                    }}
+                  >
+                    <option value="functional">功能需求</option>
+                    <option value="non-functional">非功能需求</option>
+                    <option value="business">业务需求</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div style={{marginBottom: '16px'}}>
+                <label style={{fontSize: '13px', color: '#222', fontWeight: '500'}}>负责人</label>
+                <input
+                  type="text"
+                  value={newRequirement.assignee}
+                  onChange={(e) => setNewRequirement({...newRequirement, assignee: e.target.value})}
+                  placeholder="请输入负责人姓名"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    marginTop: '4px'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div style={{display: 'flex', gap: '8px'}}>
+              <button
+                onClick={handleCreateRequirement}
+                disabled={!newRequirement.title || !newRequirement.description || isLoading}
+                style={{
+                  background: !newRequirement.title || !newRequirement.description || isLoading ? '#ccc' : '#52c41a',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: !newRequirement.title || !newRequirement.description || isLoading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <div style={{
+                      width: '12px',
+                      height: '12px',
+                      border: '2px solid #fff',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></div>
+                    同步中...
+                  </>
+                ) : (
+                  '同步至Polarion'
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Polarion模态框 */}
+      {showPolarionModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10001
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '8px',
+            width: '90%',
+            maxWidth: '1200px',
+            height: '80%',
+            display: 'flex',
+            flexDirection: 'column'
+          }}>
+            <div style={{
+              padding: '16px 24px',
+              borderBottom: '1px solid #eee',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{fontWeight: 'bold', fontSize: '18px'}}>Polarion - 需求管理系统</div>
+              <button
+                onClick={() => setShowPolarionModal(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#666'
+                }}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div style={{
+              flex: 1,
+              padding: '24px',
+              overflow: 'auto',
+              background: '#f5f5f5'
+            }}>
+              <div style={{
+                background: 'white',
+                borderRadius: '8px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '24px',
+                  padding: '16px',
+                  background: '#f0f8ff',
+                  borderRadius: '6px',
+                  border: '1px solid #91d5ff'
+                }}>
+                  <div style={{fontSize: '24px'}}>📋</div>
+                  <div>
+                    <div style={{fontWeight: 'bold', fontSize: '16px', color: '#1890ff'}}>REQ-006</div>
+                    <div style={{fontSize: '14px', color: '#666'}}>新创建的需求</div>
+                  </div>
+                </div>
+                
+                <div style={{marginBottom: '16px'}}>
+                  <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '8px'}}>需求标题</div>
+                  <div style={{padding: '12px', background: '#fafafa', borderRadius: '4px', fontSize: '14px'}}>
+                    {newRequirement.title || '示例需求标题'}
+                  </div>
+                </div>
+                
+                <div style={{marginBottom: '16px'}}>
+                  <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '8px'}}>需求描述</div>
+                  <div style={{padding: '12px', background: '#fafafa', borderRadius: '4px', fontSize: '14px', lineHeight: '1.6'}}>
+                    {newRequirement.description || '这是一个示例需求描述，详细说明了需求的具体内容和要求。'}
+                  </div>
+                </div>
+                
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px'}}>
+                  <div>
+                    <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '8px'}}>优先级</div>
+                    <div style={{
+                      padding: '8px 12px',
+                      background: '#fafafa',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      display: 'inline-block',
+                      color: newRequirement.priority === 'high' ? '#ff4d4f' : newRequirement.priority === 'medium' ? '#faad14' : '#52c41a'
+                    }}>
+                      {newRequirement.priority === 'high' ? '高' : newRequirement.priority === 'medium' ? '中' : '低'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '8px'}}>需求类型</div>
+                    <div style={{
+                      padding: '8px 12px',
+                      background: '#fafafa',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      display: 'inline-block'
+                    }}>
+                      {newRequirement.type === 'functional' ? '功能需求' : newRequirement.type === 'non-functional' ? '非功能需求' : '业务需求'}
+                    </div>
+                  </div>
+                  <div>
+                    <div style={{fontWeight: 'bold', fontSize: '14px', marginBottom: '8px'}}>负责人</div>
+                    <div style={{
+                      padding: '8px 12px',
+                      background: '#fafafa',
+                      borderRadius: '4px',
+                      fontSize: '14px',
+                      display: 'inline-block'
+                    }}>
+                      {newRequirement.assignee || '待分配'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 成功提示 */}
+      {showSuccess && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          background: '#52c41a',
+          color: 'white',
+          padding: '12px 20px',
+          borderRadius: '6px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          animation: 'slideIn 0.3s ease'
+        }}>
+          <span style={{fontSize: '16px'}}>✓</span>
+          <span>{activeTab === 'import' ? '需求载入成功' : '需求创建成功'}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function App() {
   // 状态：当前显示的主节点id（null为主流程）
   const [showSubProcessOf, setShowSubProcessOf] = useState(null);
@@ -82,6 +742,14 @@ function App() {
       (bo.name === '链接需求服务' || bo.id === 'Activity_1450w8g')
     ) {
       setSelectedNode({ type: 'bpmn:serviceTask', node: bo });
+      return;
+    }
+    // 专属配置：需求创建
+    if (
+      (bo.$type === 'bpmn:Task' || bo.type === 'bpmn:task') &&
+      (bo.name === '需求创建' || bo.id === 'Activity_0g4gw4o')
+    ) {
+      setSelectedNode({ type: 'bpmn:task', node: bo });
       return;
     }
     // 其它 BPMN 节点通用处理（所有层级的 task/service/userTask/subProcess/event 等）
@@ -135,6 +803,19 @@ function App() {
         panelContent = (
           <div style={{padding: 20}}>
             <div style={{fontWeight:'bold',fontSize:16,marginBottom:8}}>服务任务</div>
+            <div style={{marginBottom:8}}>名称：<input style={{width:'80%'}} value={bo.name||''} readOnly /></div>
+            <div style={{marginBottom:8}}>ID：<input style={{width:'80%'}} value={bo.id||''} readOnly /></div>
+          </div>
+        );
+      }
+    } else if (selectedNode.type === 'bpmn:task') {
+      // 针对"需求创建"节点展示专属配置，其它任务展示通用卡片
+      if (bo.name === '需求创建' || bo.id === 'Activity_0g4gw4o') {
+        panelContent = <RequirementCreationProperties element={bo} />;
+      } else {
+        panelContent = (
+          <div style={{padding: 20}}>
+            <div style={{fontWeight:'bold',fontSize:16,marginBottom:8}}>任务</div>
             <div style={{marginBottom:8}}>名称：<input style={{width:'80%'}} value={bo.name||''} readOnly /></div>
             <div style={{marginBottom:8}}>ID：<input style={{width:'80%'}} value={bo.id||''} readOnly /></div>
           </div>
