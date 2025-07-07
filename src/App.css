@@ -1,0 +1,4 @@
+.app-bg { background: #f0f0f0; min-height: 100vh; }
+.header-bar { display: flex; align-items: center; padding: 16px; background: #fff; border-bottom: 1px solid #ccc; }
+.app-title { font-size: 1.5em; font-weight: bold; }
+.main-content { display: flex; gap: 16px; padding: 16px; }
