@@ -1,0 +1,541 @@
+.app-bg {
+  background: #f0f0f0;
+  min-height: 100vh;
+}
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background: #1a2330;
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  box-shadow: 0 2px 8px #0001;
+}
+
+.app-title {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.main-content {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  justify-content: space-between;
+}
+
+.dashboard-panel,
+.control-panel,
+.param-panel {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px #ccc3;
+  padding: 16px;
+  min-width: 200px;
+}
+
+.dashboard-panel {
+  flex: 1;
+  margin-right: 8px;
+}
+
+.control-panel {
+  flex: 1;
+  margin: 0 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.param-panel {
+  flex: 1;
+  margin-left: 8px;
+}
+
+.gauge {
+  margin-bottom: 16px;
+}
+
+/* 保留默认样式防止报错 */
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* 工业风格主色调、字体、留白、卡片、表格、按钮等统一样式 */
+.industrial-app {
+  font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif;
+  background: #f4f6fa;
+  min-height: 100vh;
+  color: #222;
+  width: 100vw;
+  min-width: 100vw;
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.main-layout {
+  display: flex;
+  max-width: 1280px;
+  min-width: 900px;
+  width: 100%;
+  margin: 32px auto 0 auto;
+  gap: 32px;
+  box-sizing: border-box;
+}
+
+.side-panel {
+  width: 320px;
+  min-width: 260px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 24px 18px;
+  height: fit-content;
+}
+
+.main-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.target-section,
+.control-section,
+.result-section,
+.requirement-section,
+.report-section {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 24px 32px 20px 32px;
+  margin-bottom: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.target-section h3,
+.control-section h3,
+.result-section h3,
+.requirement-section h3,
+.report-section h3 {
+  font-size: 18px;
+  color: #1a2330;
+  margin-bottom: 18px;
+  font-weight: 600;
+}
+
+.result-section {
+  /* 卡片和图表区域 */
+}
+
+.requirement-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+.requirement-table th,
+.requirement-table td {
+  border: 1px solid #e0e3e8;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.requirement-table th {
+  background: #f0f2f5;
+  color: #1a2330;
+  font-weight: 600;
+}
+
+.requirement-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+/* 卡片区与表格宽度对齐 */
+.result-section,
+.requirement-section,
+.report-section {
+  width: 100%;
+  min-width: 600px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* 按钮风格统一 */
+.ant-btn-primary {
+  background: #1a5a99;
+  border-color: #1a5a99;
+}
+
+.ant-btn-primary:hover,
+.ant-btn-primary:focus {
+  background: #1760b0;
+  border-color: #1760b0;
+}
+
+.ant-btn-danger {
+  background: #c62828;
+  border-color: #c62828;
+}
+
+.ant-btn-danger:hover,
+.ant-btn-danger:focus {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+/* 工业感小细节 */
+.target-section b,
+.result-section b {
+  color: #1a5a99;
+}
+
+@media (max-width: 900px) {
+  .main-layout {
+    flex-direction: column;
+    gap: 0;
+    min-width: 100vw;
+  }
+
+  .side-panel {
+    width: 100%;
+    margin-bottom: 24px;
+  }
+
+  .main-panel {
+    min-width: 100vw;
+  }
+}
+
+/* SVG工业UI还原样式 */
+.svg-layout-bg {
+  background: #fff;
+  min-width: 1200px;
+  min-height: 800px;
+  max-width: 1600px;
+  max-height: 1000px;
+  width: 90vw;
+  height: 90vh;
+  margin: 2vh auto;
+  border-radius: 16px;
+  box-shadow: 0 0 0 2px #2221, 0 8px 32px #0002;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.svg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px 40px 0 40px;
+  border-radius: 16px 16px 0 0;
+}
+
+.svg-title {
+  font-size: 2.1rem;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-align: center;
+  flex: 1;
+}
+
+.svg-open-btn {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #1976d2 !important;
+  margin-left: 24px;
+  float: right;
+}
+
+.svg-main-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  grid-template-rows: 220px 120px 240px 1fr;
+  gap: 24px;
+  padding: 0 32px 32px 32px;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.svg-param-card {
+  background: #fafbfc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 0 0 0 0;
+  display: flex;
+  align-items: stretch;
+  min-width: 340px;
+  min-height: 220px;
+  max-width: 400px;
+  max-height: 340px;
+  overflow: hidden;
+}
+
+.svg-target-card {
+  background: #fafbfc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 0 24px 0 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 220px;
+  max-height: 340px;
+}
+
+.svg-target-section {
+  padding: 18px 0 0 0;
+}
+
+.svg-target-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.svg-target-inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  font-size: 1rem;
+}
+
+.svg-sim-control {
+  border-top: 1px solid #e0e0e0;
+  padding: 12px 0 0 0;
+}
+
+.svg-sim-btns {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.svg-sim-progress {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.svg-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #e3eaf2;
+  border-radius: 4px;
+  margin: 0 8px;
+  overflow: hidden;
+}
+
+.svg-progress-inner {
+  height: 100%;
+  background: linear-gradient(90deg,#1976d2,#42a5f5);
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.svg-result-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 18px 24px 18px 24px;
+  margin-top: 8px;
+  min-height: 120px;
+  z-index: 2;
+  position: relative;
+}
+
+.svg-result-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.svg-kpi-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 12px;
+  min-height: 64px;
+  z-index: 2;
+  position: relative;
+}
+
+.svg-kpi-item {
+  flex: 1;
+  background: #f6f8fa;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #0001;
+  padding: 12px 0 8px 0;
+  text-align: center;
+}
+
+.svg-kpi-label {
+  font-size: 1rem;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.svg-kpi-value {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.svg-kpi-pass {
+  color: #43a047;
+  font-size: 1.2em;
+  margin-left: 4px;
+}
+
+.svg-kpi-fail {
+  color: #e53935;
+  font-size: 1.2em;
+  margin-left: 4px;
+}
+
+.svg-kpi-pending {
+  color: #fbc02d;
+  font-size: 1.2em;
+  margin-left: 4px;
+}
+
+.svg-chart-row {
+  display: flex;
+  gap: 24px;
+  margin-top: 0;
+  margin-bottom: 8px;
+  min-height: 220px;
+  max-height: 240px;
+  height: 220px;
+  z-index: 1;
+  position: relative;
+}
+
+.svg-chart-item {
+  flex: 1;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px #0001;
+  padding: 8px 8px 0 8px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.dashboard-panel canvas {
+  height: 180px !important;
+  max-height: 180px !important;
+}
+
+.svg-req-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0001;
+  padding: 18px 24px 18px 24px;
+  margin-top: 8px;
+}
+
+.svg-req-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.svg-req-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.svg-req-link {
+  font-size: 1rem;
+  color: #1976d2;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.svg-req-table-wrap {
+  overflow-x: auto;
+  max-height: 220px;
+}
+
+.svg-req-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+}
+
+.svg-req-table th,
+.svg-req-table td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 10px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+.svg-req-table th {
+  background: #f6f8fa;
+  font-weight: 600;
+}
+
+.svg-req-table tr:nth-child(even) {
+  background: #fafbfc;
+}
