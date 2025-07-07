@@ -1,12 +1,47 @@
-# React + Vite
+# 工业仿真Web前端（MBSE/industrial-app）
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 项目简介
+本项目为工业仿真Web应用前端，采用 React + Vite + Ant Design + Chart.js 实现，界面风格严格参考工业HMI/SCADA，支持参数配置、目标设置、仿真控制、KPI展示、图表分析、需求追踪等功能。
 
-Currently, two official plugins are available:
+## 运行环境
+- 推荐使用 conda 环境（如 `appUI`），需包含 Node.js 16+、npm/yarn。
+- 已适配常规显示器（16:9/16:10），建议分辨率 1920x1080 及以上。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 安装依赖
+```bash
+# 进入前端目录
+cd industrial-app
+# 安装依赖
+npm install
+```
 
-## Expanding the ESLint configuration
+## 启动开发服务器
+```bash
+npm run dev
+```
+- 启动后，终端会显示本地访问地址（如 http://localhost:5173/）。
+- 浏览器访问该地址即可进入工业仿真平台。
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 主要功能
+- **参数配置**：左侧卡片，展示整车参数（只读）。
+- **目标设置/仿真控制**：右侧卡片，设置目标指标，控制仿真启动/导出。
+- **结果预览**：中部卡片，展示KPI（总圈时、最高速度、能耗、制动温度）及三大图表（速度-时间、扭矩-时间、制动温度-时间）。
+- **需求追踪**：底部卡片，表格形式展示需求验证状态。
+
+## 常见问题
+- 如页面无内容或样式异常，请确认依赖已安装且使用现代浏览器。
+- 若端口被占用，Vite 会自动切换端口。
+- 如需修改mock数据或UI布局，请编辑 `src/App.jsx`、`src/App.css`。
+
+## 依赖说明
+- React 19.x
+- Ant Design 5.x
+- Chart.js 4.x + react-chartjs-2
+- Vite 7.x
+
+## 其他
+- 推荐在 conda 环境下使用 VSCode 进行开发和调试。
+- 如需对接后端API，请在 `mockData` 结构基础上进行接口替换。
+
+---
+如有问题请联系开发者或在项目Issue区反馈。
