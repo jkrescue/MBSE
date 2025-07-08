@@ -1,4 +1,4 @@
-body, #root, .ant-layout {
+html, body, #root, .ant-layout {
   height: 100%;
 }
 .toolbar {

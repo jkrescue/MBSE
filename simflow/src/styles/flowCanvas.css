@@ -1,0 +1,249 @@
+/* LogicFlow 增强样式 - 光滑连线和动效 */
+
+/* 确保拖拽功能正常 */
+.lf-canvas-overlay {
+  pointer-events: auto !important;
+}
+
+.lf-graph {
+  pointer-events: auto !important;
+}
+
+/* 连线动画 */
+.lf-line, .lf-polyline, .lf-bezier {
+  transition: all 0.3s ease;
+}
+
+.lf-line:hover, .lf-polyline:hover, .lf-bezier:hover {
+  stroke-width: 3px !important;
+  filter: drop-shadow(0 0 6px rgba(24, 144, 255, 0.4));
+}
+
+/* 贝塞尔曲线连线动画 */
+.lf-edge-bezier {
+  stroke-dasharray: 5, 5;
+  animation: dash 2s linear infinite;
+  transition: all 0.3s ease;
+}
+
+.lf-edge-bezier:hover {
+  stroke-width: 3px !important;
+  animation-duration: 1s;
+  filter: drop-shadow(0 0 8px rgba(24, 144, 255, 0.6));
+}
+
+/* 多边形连线动画 */
+.lf-edge-polyline {
+  stroke-dasharray: 5, 5;
+  animation: dash 2s linear infinite;
+  transition: all 0.3s ease;
+}
+
+.lf-edge-polyline:hover {
+  stroke-width: 3px !important;
+  animation-duration: 1s;
+  filter: drop-shadow(0 0 8px rgba(24, 144, 255, 0.6));
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -10;
+  }
+}
+
+/* 节点动画 */
+.lf-node {
+  transition: all 0.3s ease;
+  cursor: move;
+}
+
+.lf-node:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+}
+
+.lf-node-selected {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+  }
+}
+
+/* 连接锚点样式 */
+.lf-anchor {
+  fill: #1890ff;
+  stroke: #fff;
+  stroke-width: 2;
+  r: 4;
+  transition: all 0.2s ease;
+}
+
+.lf-anchor:hover {
+  r: 6;
+  fill: #40a9ff;
+  filter: drop-shadow(0 0 4px rgba(24, 144, 255, 0.8));
+}
+
+/* 选择框样式 */
+.lf-selection-outline {
+  stroke: #1890ff;
+  stroke-width: 2;
+  stroke-dasharray: 4, 4;
+  fill: none;
+  animation: selection-dash 1s linear infinite;
+}
+
+@keyframes selection-dash {
+  to {
+    stroke-dashoffset: -8;
+  }
+}
+
+/* 画布网格增强 */
+.lf-grid {
+  opacity: 0.6;
+}
+
+/* 工具提示样式 */
+.lf-tooltip {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+/* 连线箭头增强 */
+.lf-arrow {
+  fill: #1890ff;
+  transition: all 0.3s ease;
+}
+
+.lf-edge:hover .lf-arrow {
+  fill: #40a9ff;
+  transform: scale(1.2);
+}
+
+/* 节点文本样式 */
+.lf-node-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  fill: #333;
+  transition: all 0.3s ease;
+}
+
+.lf-node:hover .lf-node-text {
+  fill: #1890ff;
+  font-weight: 500;
+}
+
+/* 连线控制点 */
+.lf-edge-adjust-point {
+  fill: #1890ff;
+  stroke: #fff;
+  stroke-width: 2;
+  r: 3;
+  cursor: move;
+  transition: all 0.2s ease;
+}
+
+.lf-edge-adjust-point:hover {
+  r: 5;
+  fill: #40a9ff;
+  filter: drop-shadow(0 0 4px rgba(24, 144, 255, 0.8));
+}
+
+/* 流动动画效果 */
+.lf-edge-flow {
+  stroke-dasharray: 8, 8;
+  animation: flow 3s linear infinite;
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+
+/* 节点状态指示器 */
+.lf-node-status {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+.lf-node-status.running {
+  background: #52c41a;
+  animation: blink 1s infinite;
+}
+
+.lf-node-status.error {
+  background: #ff4d4f;
+}
+
+.lf-node-status.waiting {
+  background: #faad14;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.3; }
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .lf-node-text {
+    font-size: 10px;
+  }
+  
+  .lf-anchor {
+    r: 3;
+  }
+  
+  .lf-anchor:hover {
+    r: 5;
+  }
+}
+
+/* 高对比度模式 */
+@media (prefers-contrast: high) {
+  .lf-line {
+    stroke-width: 3px;
+  }
+  
+  .lf-node {
+    stroke-width: 3px;
+  }
+}
+
+/* 减少动画模式 */
+@media (prefers-reduced-motion: reduce) {
+  .lf-node,
+  .lf-line,
+  .lf-anchor,
+  .lf-edge-adjust-point {
+    transition: none;
+    animation: none;
+  }
+  
+  .lf-edge-bezier {
+    animation: none;
+  }
+}
